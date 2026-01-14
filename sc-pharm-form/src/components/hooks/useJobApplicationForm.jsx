@@ -14,12 +14,6 @@ export default function useJobApplicationForm() {
   const [branchUnlocked, setBranchUnlocked] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
 
-  useEffect(() => {
-    document.body.classList.toggle("dark", isDark);
-    if (isDark) document.body.setAttribute("data-theme", "dark");
-    else document.body.removeAttribute("data-theme");
-  }, [isDark]);
-
   const flags = useMemo(() => {
     const showReference = !!referenceStep && !branchUnlocked;
     const showSalesBranch = form.positionApplied === "พนักงานขายหน้าร้าน" && branchUnlocked;

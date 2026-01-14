@@ -27,6 +27,12 @@ body {
   background: var(--bg);
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 a {
   color: var(--accent);
   text-decoration: none;
@@ -40,6 +46,7 @@ a:hover {
   min-height: 100vh;
   padding: 28px 16px 56px;
   background: radial-gradient(circle at top right, #f1f4ff 0%, var(--bg) 60%);
+  color: var(--text);
 }
 
 .page.theme-dark {
@@ -52,6 +59,17 @@ a:hover {
   --input: #4a527b;
   --shadow: 0 18px 40px rgba(6, 8, 20, 0.5);
   background: radial-gradient(circle at top right, #1f2550 0%, var(--bg) 60%);
+}
+
+:root:has(.page.theme-dark) {
+  --bg: #13162e;
+  --card: #1a1f3d;
+  --section-bg: #1f2547;
+  --text: #f6f7ff;
+  --muted: #b9bed8;
+  --border: #2c335a;
+  --input: #4a527b;
+  --shadow: 0 18px 40px rgba(6, 8, 20, 0.5);
 }
 
 .form-card {
@@ -139,6 +157,9 @@ a:hover {
   font-weight: 600;
   font-size: 14px;
   display: grid;
+  grid-template-columns: auto 1fr; /* 2 คอลัมน์ */
+  justify-content: start;
+  justify-items: start;
   gap: 6px;
 }
 
@@ -313,20 +334,38 @@ a:hover {
   font-size: 12px;
 }
 
-body.dark h1.title,
-body.dark label.question-label,
-body.dark h3,
-body.dark .question-label,
-body.darkmode h1.title,
-body.darkmode label.question-label,
-body.darkmode h3,
-body.darkmode .question-label,
-body[data-theme="dark"] h1.title,
-body[data-theme="dark"] label.question-label,
-body[data-theme="dark"] h3,
-body[data-theme="dark"] .question-label {
-  color: #ffffff;
+body,
+.page,
+.form-card,
+.question-block,
+.gf-input,
+.gf-select,
+.gf-textarea,
+.theme-toggle,
+.submit-btn {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .page,
+  .form-card,
+  .question-block,
+  .gf-input,
+  .gf-select,
+  .gf-textarea,
+  .theme-toggle,
+  .submit-btn {
+    transition: none;
+  }
+}
+
+
 
 @media (max-width: 640px) {
   .form-body {
