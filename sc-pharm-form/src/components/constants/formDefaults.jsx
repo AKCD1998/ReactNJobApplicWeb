@@ -1,0 +1,45 @@
+export const SALES_DEFAULTS = {
+  salesBranchPreference: "",
+  workHistorySales: "",
+  expectedSalarySales: "",
+  availableStartDateSales: "",
+  referralSourceSales: "",
+  referralOtherSales: "",
+  birthDateSales: "",
+  resumeFileNameSales: "",
+  resumeFileDataSales: "",
+  resumeFileMimeSales: "",
+};
+
+export const PHARM_DEFAULTS = {
+  pharmacistBranchPreference: "",
+  licenseNumber: "",
+  pharmacySchool: "",
+  pharmacySchoolOther: "",
+  workHistoryPharmacist: "",
+  expectedSalaryPharmacist: "",
+  availableStartDatePharmacist: "",
+  referralSourcePharmacist: "",
+  referralOtherPharmacist: "",
+  birthDatePharmacist: "",
+  resumeFileNamePharmacist: "",
+  resumeFileDataPharmacist: "",
+  resumeFileMimePharmacist: "",
+};
+
+export const INITIAL_FORM = {
+  email: "",
+  fullName: "",
+  nickName: "",
+  sex: "",
+  age: "",
+  phone: "",
+  lineId: "",
+  educationLevel: "",
+  instituteName: "",
+  major: "",
+  positionApplied: "",
+  pharmacistType: "",
+  ...SALES_DEFAULTS,
+  ...PHARM_DEFAULTS,
+};
