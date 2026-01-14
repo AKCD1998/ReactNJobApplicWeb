@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import fileToDataUrl from "../utils/fileToDataUrl";
 import { INITIAL_FORM, SALES_DEFAULTS, PHARM_DEFAULTS } from "../constants/formDefaults";
 import { SUBMIT_URL } from "../constants/options";
