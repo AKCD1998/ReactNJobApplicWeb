@@ -1,14 +1,8 @@
 export const SALES_DEFAULTS = {
   salesBranchPreference: "",
-  workHistorySales: "",
-  expectedSalarySales: "",
   availableStartDateSales: "",
   referralSourceSales: "",
   referralOtherSales: "",
-  birthDateSales: "",
-  resumeFileNameSales: "",
-  resumeFileDataSales: "",
-  resumeFileMimeSales: "",
 };
 
 export const PHARM_DEFAULTS = {
@@ -16,15 +10,9 @@ export const PHARM_DEFAULTS = {
   licenseNumber: "",
   pharmacySchool: "",
   pharmacySchoolOther: "",
-  workHistoryPharmacist: "",
-  expectedSalaryPharmacist: "",
   availableStartDatePharmacist: "",
   referralSourcePharmacist: "",
   referralOtherPharmacist: "",
-  birthDatePharmacist: "",
-  resumeFileNamePharmacist: "",
-  resumeFileDataPharmacist: "",
-  resumeFileMimePharmacist: "",
 };
 
 export const INITIAL_FORM = {
@@ -36,6 +24,7 @@ export const INITIAL_FORM = {
   phone: "",
   lineId: "",
   educationLevel: "",
+  educationLevelOther: "",
   instituteName: "",
   major: "",
   positionApplied: "",

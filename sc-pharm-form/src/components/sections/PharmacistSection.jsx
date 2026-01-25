@@ -1,4 +1,4 @@
-export default function PharmacistSection({ show, form, onChange, onFileChange, schoolOptions }) {
+export default function PharmacistSection({ show, form, onChange, schoolOptions, errors }) {
   if (!show) return null;
 
   return (
@@ -6,12 +6,14 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
       <div className="section-title">คำถามเฉพาะเภสัชกร</div>
 
       <div className="question-block">
-        <div className="question-label">สาขาที่ต้องการทำงาน</div>
-        <div className="option-grid">
+        <div className="question-label">สาขาที่ต้องการทำงาน<span className="required-star">*</span></div>
+        <div
+          className={`option-grid ${errors?.pharmacistBranchPreference ? "is-invalid" : ""}`}
+          id="pharmacistBranchPreference-group"
+        >
           {[
             "สาขาตลาดบางน้อย",
             "สาขาวัดช่องลม",
-            "Telepharmacies and Mobile pharmacist",
           ].map((item) => (
             <label key={item} className="option-item">
               <input
@@ -25,11 +27,14 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
             </label>
           ))}
         </div>
+        {errors?.pharmacistBranchPreference ? (
+          <div className="error-text">{errors.pharmacistBranchPreference.message}</div>
+        ) : null}
       </div>
 
       <div className="question-block">
         <label className="question-label" htmlFor="licenseNumber">
-          เลขใบประกอบวิชาชีพ (ถ้ามี)
+          เลขใบประกอบวิชาชีพ (ระบุแค่ตัวเลขหลัง ภ.)<span className="required-star">*</span>
         </label>
         <input
           id="licenseNumber"
@@ -38,23 +43,26 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
           placeholder="เลขที่ใบประกอบวิชาชีพ"
           value={form.licenseNumber}
           onChange={onChange}
-          className="gf-input"
+          className={`gf-input ${errors?.licenseNumber ? "is-invalid" : ""}`}
         />
+        {errors?.licenseNumber ? (
+          <div className="error-text">{errors.licenseNumber.message}</div>
+        ) : null}
       </div>
 
       <div className="question-block">
         <label className="question-label" htmlFor="pharmacySchool">
-          สถาบันที่จบเภสัชศาสตร์
+          สถาบันที่จบเภสัชศาสตร์<span className="required-star">*</span>
         </label>
         <select
           id="pharmacySchool"
           name="pharmacySchool"
           value={form.pharmacySchool}
           onChange={onChange}
-          className="gf-select"
+          className={`gf-select ${errors?.pharmacySchool ? "is-invalid" : ""}`}
         >
           <option value="">-- เลือก --</option>
-          {SCHOOL_OPTIONS.map((school) => (
+          {schoolOptions.map((school) => (
             <option key={school} value={school}>
               {school}
             </option>
@@ -71,38 +79,12 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
             className="gf-input"
           />
         ) : null}
+        {errors?.pharmacySchool ? (
+          <div className="error-text">{errors.pharmacySchool.message}</div>
+        ) : null}
       </div>
 
       <div className="question-block">
-        <label className="question-label" htmlFor="workHistoryPharmacist">
-          ประวัติการทำงาน
-        </label>
-        <textarea
-          id="workHistoryPharmacist"
-          name="workHistoryPharmacist"
-          rows={3}
-          placeholder="เล่าประสบการณ์ที่เกี่ยวข้อง"
-          value={form.workHistoryPharmacist}
-          onChange={onChange}
-          className="gf-textarea"
-        />
-      </div>
-
-      <div className="question-block two-col">
-        <label className="question-label" htmlFor="expectedSalaryPharmacist">
-          เงินเดือนที่คาดหวัง<span className="required-star">*</span>
-          <input
-            id="expectedSalaryPharmacist"
-            name="expectedSalaryPharmacist"
-            type="text"
-            placeholder="เช่น 25,000"
-            value={form.expectedSalaryPharmacist}
-            onChange={onChange}
-            className="gf-input"
-            required
-          />
-        </label>
-
         <label className="question-label" htmlFor="availableStartDatePharmacist">
           วันที่เริ่มงานได้<span className="required-star">*</span>
           <input
@@ -111,17 +93,24 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
             type="date"
             value={form.availableStartDatePharmacist}
             onChange={onChange}
-            className="gf-input"
+            className={`gf-input ${errors?.availableStartDatePharmacist ? "is-invalid" : ""}`}
             required
           />
         </label>
+        {errors?.availableStartDatePharmacist ? (
+          <div className="error-text">{errors.availableStartDatePharmacist.message}</div>
+        ) : null}
       </div>
+
 
       <div className="question-block">
         <div className="question-label">
           ช่องทางที่รู้จักเรา<span className="required-star">*</span>
         </div>
-        <div className="option-grid">
+        <div
+          className={`option-grid ${errors?.referralSourcePharmacist ? "is-invalid" : ""}`}
+          id="referralSourcePharmacist-group"
+        >
           {["Facebook page", "Line official account", "Pharm-job.com", "LinkedIn", "อื่นๆ"].map((item) => (
             <label key={item} className="option-item">
               <input
@@ -137,48 +126,23 @@ export default function PharmacistSection({ show, form, onChange, onFileChange, 
         </div>
         {form.referralSourcePharmacist === "อื่นๆ" ? (
           <input
+            id="referralOtherPharmacist"
             name="referralOtherPharmacist"
             type="text"
             placeholder="ระบุช่องทางอื่นๆ"
             value={form.referralOtherPharmacist}
             onChange={onChange}
-            className="gf-input"
+            className={`gf-input ${errors?.referralOtherPharmacist ? "is-invalid" : ""}`}
           />
+        ) : null}
+        {errors?.referralSourcePharmacist ? (
+          <div className="error-text">{errors.referralSourcePharmacist.message}</div>
+        ) : null}
+        {errors?.referralOtherPharmacist ? (
+          <div className="error-text">{errors.referralOtherPharmacist.message}</div>
         ) : null}
       </div>
 
-      {form.pharmacistType === "เภสัชกรฟูลไทม์" ? (
-        <div className="question-block">
-          <label className="question-label" htmlFor="birthDatePharmacist">
-            วันเกิด<span className="required-star">*</span>
-          </label>
-          <input
-            id="birthDatePharmacist"
-            name="birthDatePharmacist"
-            type="date"
-            value={form.birthDatePharmacist}
-            onChange={onChange}
-            className="gf-input"
-            required
-          />
-        </div>
-      ) : null}
-
-      <div className="question-block">
-        <label className="question-label" htmlFor="resumeFilePharmacist">
-          อัปโหลดเรซูเม่ (PDF/Word)
-        </label>
-        <input
-          id="resumeFilePharmacist"
-          type="file"
-          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          onChange={(e) => onFileChange(e, "pharmacist")}
-          className="gf-file"
-        />
-        {form.resumeFileNamePharmacist ? (
-          <div className="file-meta">ไฟล์ที่เลือก: {form.resumeFileNamePharmacist}</div>
-        ) : null}
-      </div>
     </>
   );
 }

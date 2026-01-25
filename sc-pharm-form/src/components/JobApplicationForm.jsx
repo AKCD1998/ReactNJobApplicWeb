@@ -1,4 +1,3 @@
-
 import useJobApplicationForm from "./hooks/useJobApplicationForm";
 import { SCHOOL_OPTIONS } from "./constants/options";
 import BasicInfoSection from "./sections/BasicInfoSection";
@@ -15,12 +14,12 @@ export default function JobApplicationForm() {
   const {
     isDark, setIsDark,
     form, status, isSubmitting,
+    errors,
     flags: { showReference, showSalesBranch, showPharmBranch },
     handlers: {
       onChange,
       onPositionChange,
       onPharmacistTypeChange,
-      onFileChange,
       onSubmit,
       setBranchUnlocked
     },
@@ -45,14 +44,15 @@ export default function JobApplicationForm() {
           <form onSubmit={onSubmit} className="form-grid">
             <div className="section-title">ข้อมูลพื้นฐาน</div>
 
-            <BasicInfoSection form={form} onChange={onChange} />
+            <BasicInfoSection form={form} onChange={onChange} errors={errors} />
            
 
-            <EducationSection form={form} onChange={onChange} />
+            <EducationSection form={form} onChange={onChange} errors={errors} />
 
             <PositionSection
               form={form}
               onChange={onChange}
+              errors={errors}
               onPositionChange={onPositionChange}
               onPharmacistTypeChange={onPharmacistTypeChange}
             />
@@ -67,7 +67,7 @@ export default function JobApplicationForm() {
                 show={showSalesBranch}
                 form={form}
                 onChange={onChange}
-                onFileChange={onFileChange}
+                errors={errors}
               />
 
 
@@ -76,11 +76,12 @@ export default function JobApplicationForm() {
                 show={showPharmBranch}
                 form={form}
                 onChange={onChange}
-                onFileChange={onFileChange}
+                errors={errors}
                 schoolOptions={SCHOOL_OPTIONS}
               />
 
             <SubmitRow status={status} isSubmitting={isSubmitting} />
+
           </form>
         </div>
       </div>
