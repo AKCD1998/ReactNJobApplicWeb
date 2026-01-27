@@ -1,4 +1,4 @@
-export default function validateForm(form, { referenceStep, branchUnlocked }) {
+export default function validateForm(form) {
     if (!form.email.trim()) return "กรุณากรอกอีเมล";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) return "รูปแบบอีเมลไม่ถูกต้อง";
     if (!form.fullName.trim()) return "กรุณากรอกชื่อ-นามสกุล";
@@ -13,7 +13,6 @@ export default function validateForm(form, { referenceStep, branchUnlocked }) {
     if (form.positionApplied === "เภสัชกร" && !form.pharmacistType) {
       return "กรุณาเลือกประเภทเภสัชกร";
     }
-    if (referenceStep && !branchUnlocked) return "กรุณาอ่านข้อมูลอ้างอิงและกดสมัครตำแหน่งนี้";
 
     if (form.positionApplied === "พนักงานขายหน้าร้าน") {
       if (!form.availableStartDateSales) return "กรุณาเลือกวันที่เริ่มงานได้";

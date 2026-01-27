@@ -1,19 +1,28 @@
-export default function ReferenceCard({ show, referenceData, onUnlock }) {
-  if (!show || !referenceData) return null;
-  const showHint = import.meta.env.DEV;
+export default function ReferenceCard({ referenceData }) {
+  const data = referenceData || {
+    title: "ข้อมูลอ้างอิง",
+    image: "",
+    sections: [
+      {
+        heading: "รายละเอียด",
+        items: ["ยังไม่มีข้อมูลอ้างอิงสำหรับตำแหน่งนี้"],
+      },
+    ],
+    note: "",
+  };
 
   return (
     <div className="reference-card">
       <div className="reference-image-wrap">
-        {referenceData.image ? (
-          <img src={referenceData.image} alt={referenceData.title} />
+        {data.image ? (
+          <img src={data.image} alt={data.title} />
         ) : (
-          <div className="reference-placeholder">{referenceData.title}</div>
+          <div className="reference-placeholder">{data.title}</div>
         )}
       </div>
       <div className="reference-body">
-        <h3>{referenceData.title}</h3>
-        {referenceData.sections?.map((section) => (
+        <h3>{data.title}</h3>
+        {data.sections?.map((section) => (
           <div key={section.heading} className="ref-section">
             <h4 className="ref-heading">{section.heading}</h4>
             <ul className="ref-list">
@@ -23,15 +32,7 @@ export default function ReferenceCard({ show, referenceData, onUnlock }) {
             </ul>
           </div>
         ))}
-        {referenceData.note ? <p className="ref-note">{referenceData.note}</p> : null}
-        <button type="button" className="primary-btn" onClick={() => onUnlock?.()}>
-          สมัครตำแหน่งนี้
-        </button>
-        {showHint ? (
-          <div className="reference-hint">
-            ใส่ URL รูปใน SALES_REF_IMAGE / PHARM_*_REF_IMAGE ได้ตามต้องการ
-          </div>
-        ) : null}
+        {data.note ? <p className="ref-note">{data.note}</p> : null}
       </div>
     </div>
   );

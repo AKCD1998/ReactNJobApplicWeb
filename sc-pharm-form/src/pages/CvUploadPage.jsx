@@ -69,18 +69,38 @@ export default function CvUploadPage({ onNavigate }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalType, setModalType] = useState(null);
 
+  const normalizePath = (path) => {
+    if (!path) return "/";
+    const withSlash = path.startsWith("/") ? path : `/${path}`;
+    return withSlash.length > 1 ? withSlash.replace(/\/+$/, "") : withSlash;
+  };
+
   const goTo = (path) => {
     if (onNavigate) {
       onNavigate(path);
       return;
     }
-    window.location.assign(path);
+    window.location.hash = normalizePath(path);
   };
 
   const resetInput = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const resetAll = () => {
+    resetInput();
+    setSelectedFile(null);
+    setError("");
+    setIsDragging(false);
+    setIsSubmitting(false);
+    setModalType(null);
+  };
+
+  const handleModalClose = () => {
+    resetAll();
+    goTo("/apply");
   };
 
   const setFile = (file) => {
@@ -231,7 +251,7 @@ export default function CvUploadPage({ onNavigate }) {
       </div>
 
       {modalType ? (
-        <StatusModal type={modalType} onClose={() => setModalType(null)} />
+        <StatusModal type={modalType} onClose={handleModalClose} />
       ) : null}
     </main>
   );

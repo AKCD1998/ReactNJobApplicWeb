@@ -178,17 +178,15 @@ export default function useJobApplicationForm() {
   const [isDark, setIsDark] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState("");
-  const [referenceStep, setReferenceStep] = useState("");
-  const [branchUnlocked, setBranchUnlocked] = useState(false);
+  const [submitResult, setSubmitResult] = useState("");
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
 
   const flags = useMemo(() => {
-    const showReference = !!referenceStep && !branchUnlocked;
-    const showSalesBranch = form.positionApplied === "พนักงานขายหน้าร้าน" && branchUnlocked;
-    const showPharmBranch = form.positionApplied === "เภสัชกร" && branchUnlocked;
-    return { showReference, showSalesBranch, showPharmBranch };
-  }, [referenceStep, branchUnlocked, form.positionApplied]);
+    const showSalesBranch = form.positionApplied === "พนักงานขายหน้าร้าน";
+    const showPharmBranch = form.positionApplied === "เภสัชกร";
+    return { showSalesBranch, showPharmBranch };
+  }, [form.positionApplied]);
 
   const requiredValidation = useMemo(() => validateRequiredFields(form), [form]);
 
@@ -205,9 +203,7 @@ export default function useJobApplicationForm() {
   }
 
   function onPositionChange(value) {
-    setBranchUnlocked(false);
     setStatus("");
-    setReferenceStep(value === "พนักงานขายหน้าร้าน" ? "sales" : "");
     setErrors(prev => {
       const next = { ...prev };
       delete next.positionApplied;
@@ -233,9 +229,7 @@ export default function useJobApplicationForm() {
   }
 
   function onPharmacistTypeChange(value) {
-    setBranchUnlocked(false);
     setStatus("");
-    setReferenceStep(value === "เภสัชกรฟูลไทม์" ? "pharm-full" : "pharm-part");
     setErrors(prev => {
       const next = { ...prev };
       delete next.pharmacistType;
@@ -256,6 +250,7 @@ export default function useJobApplicationForm() {
     if (!requiredValidation.isValid) {
       setErrors(requiredValidation.errors);
       setStatus("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน");
+      setSubmitResult("");
 
       const targetId = requiredValidation.firstInvalidFieldId;
       if (targetId) {
@@ -274,6 +269,7 @@ export default function useJobApplicationForm() {
 
     setStatus("");
     setErrors({});
+    setSubmitResult("");
     setIsSubmitting(true);
 
     try {
@@ -289,13 +285,32 @@ export default function useJobApplicationForm() {
       if (!res.ok || !data?.gasOk) throw new Error(data?.error || "Submission failed");
 
       setStatus("ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณที่สมัครงานกับเรา");
+      setSubmitResult("success");
     } catch (err) {
       console.error("SUBMIT ERROR:", err);
       setStatus("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
+      setSubmitResult("error");
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  function resetForm() {
+    setForm(INITIAL_FORM);
+    setErrors({});
+    setStatus("");
+    setSubmitResult("");
+    setIsSubmitting(false);
+  }
+    const referenceStep = form.positionApplied === "พนักงานขายหน้าร้าน"
+      ? "sales"
+      : form.positionApplied === "เภสัชกร"
+        ? (form.pharmacistType === "เภสัชกรฟูลไทม์"
+          ? "pharm-full"
+          : form.pharmacistType === "เภสัชกรพาร์ทไทม์"
+            ? "pharm-part"
+            : "")
+        : "";
     const referenceData = getReferenceData(referenceStep);
     
     return {
@@ -303,6 +318,7 @@ export default function useJobApplicationForm() {
       isSubmitting, setIsSubmitting,
       form, setForm,
       status,
+      submitResult,
       errors,
       flags,
       referenceData,
@@ -311,6 +327,6 @@ export default function useJobApplicationForm() {
       onPositionChange,
       onPharmacistTypeChange,
       onSubmit,
-      setBranchUnlocked },
+      resetForm },
     };
 }

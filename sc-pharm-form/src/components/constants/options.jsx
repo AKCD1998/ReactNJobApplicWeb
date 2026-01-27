@@ -1,3 +1,5 @@
+import { getEnabledBranches } from "../../config/branches";
+
 const SUBMIT_URL =
   "https://script.google.com/macros/s/AKfycbw3q1pme3bSxNNPCmJ4aZK85ps01Nx9QDkbL-4nJYcnbdcJZ3b9iihI6pfTN44UchMn/exec";
 
@@ -31,8 +33,13 @@ const SCHOOL_OPTIONS = [
   "มหาวิทยาลัยวลัยลักษณ์ (Walailak University) (สำนักวิชา)"
 ];
 
+const getBranchLabels = (role) => getEnabledBranches(role).map((branch) => branch.label);
+
 
 export function getReferenceData(step) {
+  const salesBranchLabels = getBranchLabels("sales");
+  const pharmBranchLabels = getBranchLabels("pharmacist");
+
   return {
     sales: {
       title: "พนักงานขายหน้าร้าน",
@@ -40,10 +47,12 @@ export function getReferenceData(step) {
       sections: [
         {
           heading: "รับสมัครพนักงาน",
-          items: [
-            "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาตลาดแม่กลอง",
-            "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาวัดช่องลม",
-          ],
+          items: salesBranchLabels.length
+            ? salesBranchLabels
+            : [
+                "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาตลาดแม่กลอง",
+                "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาวัดช่องลม",
+              ],
         },
         {
           heading: "รายได้และสวัสดิการ",
@@ -68,7 +77,7 @@ export function getReferenceData(step) {
       sections: [
         {
           heading: "รับสมัครพนักงาน",
-          items: ["เภสัชกรฟูลไทม์"],
+          items: pharmBranchLabels.length ? pharmBranchLabels : ["เภสัชกรฟูลไทม์"],
         },
         {
           heading: "รายได้และสวัสดิการ",
@@ -87,7 +96,7 @@ export function getReferenceData(step) {
       sections: [
         {
           heading: "รับสมัครพนักงาน",
-          items: ["เภสัชกรพาร์ทไทม์"],
+          items: pharmBranchLabels.length ? pharmBranchLabels : ["เภสัชกรพาร์ทไทม์"],
         },
         {
           heading: "รายได้และสวัสดิการ",

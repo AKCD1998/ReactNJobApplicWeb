@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { getEnabledBranchIds, getEnabledBranches } from "../../config/branches";
 
-export default function PharmacistSection({ show, form, onChange, schoolOptions, errors }) {
+export default function PharmacistSection({ form, onChange, schoolOptions, errors }) {
   const branchOptions = getEnabledBranches("pharmacist");
   const branchIds = getEnabledBranchIds("pharmacist");
 
@@ -15,8 +15,6 @@ export default function PharmacistSection({ show, form, onChange, schoolOptions,
       });
     }
   }, [form.pharmacistBranchPreference, branchIds, onChange]);
-
-  if (!show) return null;
 
   return (
     <>

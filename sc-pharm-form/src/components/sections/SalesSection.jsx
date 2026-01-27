@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { getEnabledBranchIds, getEnabledBranches } from "../../config/branches";
 
-export default function SalesSection({ show, form, onChange, errors }) {
+export default function SalesSection({ form, onChange, errors }) {
   const branchOptions = getEnabledBranches("sales");
   const branchIds = getEnabledBranchIds("sales");
 
@@ -12,8 +12,6 @@ export default function SalesSection({ show, form, onChange, errors }) {
       });
     }
   }, [form.salesBranchPreference, branchIds, onChange]);
-
-  if (!show) return null;
 
   return (
     <>

@@ -1,10 +1,16 @@
 export default function ApplyEntryPage({ onNavigate }) {
+  const normalizePath = (path) => {
+    if (!path) return "/";
+    const withSlash = path.startsWith("/") ? path : `/${path}`;
+    return withSlash.length > 1 ? withSlash.replace(/\/+$/, "") : withSlash;
+  };
+
   const goTo = (path) => {
     if (onNavigate) {
       onNavigate(path);
       return;
     }
-    window.location.assign(path);
+    window.location.hash = normalizePath(path);
   };
 
   return (

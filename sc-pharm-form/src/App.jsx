@@ -8,41 +8,43 @@ import "./pages/apply.css";
 
 const normalizePath = (path) => {
   if (!path) return "/";
-  return path.length > 1 ? path.replace(/\/+$/, "") : path;
+  const withSlash = path.startsWith("/") ? path : `/${path}`;
+  return withSlash.length > 1 ? withSlash.replace(/\/+$/, "") : withSlash;
 };
 
+const getHashPath = () => normalizePath(window.location.hash.replace(/^#/, ""));
+
 export default function App() {
-  const [path, setPath] = useState(() => normalizePath(window.location.pathname));
+  const [path, setPath] = useState(() => getHashPath());
 
   useEffect(() => {
-    const handlePopState = () => {
-      setPath(normalizePath(window.location.pathname));
+    const handleHashChange = () => {
+      setPath(getHashPath());
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   const navigate = useCallback(
     (nextPath) => {
       const normalized = normalizePath(nextPath);
       if (normalized === path) return;
-      window.history.pushState({}, "", normalized);
-      setPath(normalized);
+      window.location.hash = normalized;
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [path]
   );
 
-  if (path === "/apply") {
-    return <ApplyEntryPage onNavigate={navigate} />;
+  if (path === "/apply/form") {
+    return <JobApplicationForm />;
   }
 
   if (path === "/apply/cv") {
     return <CvUploadPage onNavigate={navigate} />;
   }
 
-  if (path === "/apply/form" || path === "/") {
-    return <JobApplicationForm />;
+  if (path === "/apply" || path === "/") {
+    return <ApplyEntryPage onNavigate={navigate} />;
   }
 
   return <ApplyEntryPage onNavigate={navigate} />;
