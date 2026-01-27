@@ -35,7 +35,7 @@ jobs:
         run: npm run build
         working-directory: sc-pharm-form
         env:
-          VITE_API_BASE_URL: https://<โดเมน-backend-โปรดักชันของคุณ>
+          VITE_API_BASE_URL: https://reactnjobapplicweb.onrender.com
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
