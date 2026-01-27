@@ -1,10 +1,18 @@
 import { getEnabledBranches } from "../../config/branches";
 
+// Google Apps Script (คงเดิม)
 const SUBMIT_URL =
   "https://script.google.com/macros/s/AKfycbw3q1pme3bSxNNPCmJ4aZK85ps01Nx9QDkbL-4nJYcnbdcJZ3b9iihI6pfTN44UchMn/exec";
 
-const APPLICATION_SUBMIT_URL = "http://localhost:3003/api/submit-application";
-const CV_SUBMIT_URL = "http://localhost:3003/api/apply/cv";
+/**
+ * IMPORTANT:
+ * - Production ต้องตั้งค่า VITE_API_BASE_URL เป็นโดเมน backend จริง
+ * - Local dev ถ้าไม่ตั้ง จะ fallback ไป http://localhost:3003
+ */
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3003";
+
+const APPLICATION_SUBMIT_URL = `${API_BASE}/api/submit-application`;
+const CV_SUBMIT_URL = `${API_BASE}/api/apply/cv`;
 
 const SALES_REF_IMAGE = "";
 const PHARM_FULL_REF_IMAGE = "";
@@ -30,86 +38,94 @@ const SCHOOL_OPTIONS = [
   "มหาวิทยาลัยบูรพา (Burapha University)",
   "มหาวิทยาลัยพะเยา (Phayao University)",
   "มหาวิทยาลัยธรรมศาสตร์ (Thammasat University)",
-  "มหาวิทยาลัยวลัยลักษณ์ (Walailak University) (สำนักวิชา)"
+  "มหาวิทยาลัยวลัยลักษณ์ (Walailak University) (สำนักวิชา)",
 ];
 
-const getBranchLabels = (role) => getEnabledBranches(role).map((branch) => branch.label);
-
+const getBranchLabels = (role) =>
+  getEnabledBranches(role).map((branch) => branch.label);
 
 export function getReferenceData(step) {
   const salesBranchLabels = getBranchLabels("sales");
   const pharmBranchLabels = getBranchLabels("pharmacist");
 
-  return {
-    sales: {
-      title: "พนักงานขายหน้าร้าน",
-      image: SALES_REF_IMAGE,
-      sections: [
-        {
-          heading: "รับสมัครพนักงาน",
-          items: salesBranchLabels.length
-            ? salesBranchLabels
-            : [
-                "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาตลาดแม่กลอง",
-                "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาวัดช่องลม",
-              ],
-        },
-        {
-          heading: "รายได้และสวัสดิการ",
-          items: [
-            "รายวัน 360++",
-            "รายเดือนเริ่มต้น 10,000++ (ผ่านทดลองงาน)",
-            "โบนัส",
-            "ประกันสังคม",
-            "งานเลี้ยงประจำปี",
-          ],
-        },
-        {
-          heading: "คุณสมบัติ",
-          items: ["อายุ 18 ปีขึ้นไป", "วุฒิ ม.3", "สามารถทำงานเป็นกะได้"],
-        },
-      ],
-      note: "รู้ผลทันทีภายในวันสัมภาษณ์",
-    },
-    "pharm-full": {
-      title: "เภสัชกรฟูลไทม์",
-      image: PHARM_FULL_REF_IMAGE,
-      sections: [
-        {
-          heading: "รับสมัครพนักงาน",
-          items: pharmBranchLabels.length ? pharmBranchLabels : ["เภสัชกรฟูลไทม์"],
-        },
-        {
-          heading: "รายได้และสวัสดิการ",
-          items: ["รายได้ประจำ + อินเซนทีฟ", "สวัสดิการครบ"],
-        },
-        {
-          heading: "คุณสมบัติ",
-          items: ["มีใบประกอบวิชาชีพ", "ทำงานเป็นทีมได้ดี"],
-        },
-      ],
-      note: "รู้ผลทันทีภายในวันสัมภาษณ์",
-    },
-    "pharm-part": {
-      title: "เภสัชกรพาร์ทไทม์",
-      image: PHARM_PART_REF_IMAGE,
-      sections: [
-        {
-          heading: "รับสมัครพนักงาน",
-          items: pharmBranchLabels.length ? pharmBranchLabels : ["เภสัชกรพาร์ทไทม์"],
-        },
-        {
-          heading: "รายได้และสวัสดิการ",
-          items: ["ค่าตอบแทนรายชั่วโมง", "เลือกกะทำงานได้"],
-        },
-        {
-          heading: "คุณสมบัติ",
-          items: ["เหมาะกับผู้มีงานหลัก", "ยืดหยุ่นเวลาได้"],
-        },
-      ],
-      note: "รู้ผลทันทีภายในวันสัมภาษณ์",
-    },
-  }[step] || null;
+  return (
+    {
+      sales: {
+        title: "พนักงานขายหน้าร้าน",
+        image: SALES_REF_IMAGE,
+        sections: [
+          {
+            heading: "รับสมัครพนักงาน",
+            items: salesBranchLabels.length
+              ? salesBranchLabels
+              : [
+                  "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาตลาดแม่กลอง",
+                  "พนักงานขายประจำร้านยา ศิริชัยเภสัช สาขาวัดช่องลม",
+                ],
+          },
+          {
+            heading: "รายได้และสวัสดิการ",
+            items: [
+              "รายวัน 360++",
+              "รายเดือนเริ่มต้น 10,000++ (ผ่านทดลองงาน)",
+              "โบนัส",
+              "ประกันสังคม",
+              "งานเลี้ยงประจำปี",
+            ],
+          },
+          {
+            heading: "คุณสมบัติ",
+            items: ["อายุ 18 ปีขึ้นไป", "วุฒิ ม.3", "สามารถทำงานเป็นกะได้"],
+          },
+        ],
+        note: "รู้ผลทันทีภายในวันสัมภาษณ์",
+      },
+
+      "pharm-full": {
+        title: "เภสัชกรฟูลไทม์",
+        image: PHARM_FULL_REF_IMAGE,
+        sections: [
+          {
+            heading: "รับสมัครพนักงาน",
+            items: pharmBranchLabels.length
+              ? pharmBranchLabels
+              : ["เภสัชกรฟูลไทม์"],
+          },
+          {
+            heading: "รายได้และสวัสดิการ",
+            items: ["รายได้ประจำ + อินเซนทีฟ", "สวัสดิการครบ"],
+          },
+          {
+            heading: "คุณสมบัติ",
+            items: ["มีใบประกอบวิชาชีพ", "ทำงานเป็นทีมได้ดี"],
+          },
+        ],
+        note: "รู้ผลทันทีภายในวันสัมภาษณ์",
+      },
+
+      "pharm-part": {
+        title: "เภสัชกรพาร์ทไทม์",
+        image: PHARM_PART_REF_IMAGE,
+        sections: [
+          {
+            heading: "รับสมัครพนักงาน",
+            items: pharmBranchLabels.length
+              ? pharmBranchLabels
+              : ["เภสัชกรพาร์ทไทม์"],
+          },
+          {
+            heading: "รายได้และสวัสดิการ",
+            items: ["ค่าตอบแทนรายชั่วโมง", "เลือกกะทำงานได้"],
+          },
+          {
+            heading: "คุณสมบัติ",
+            items: ["เหมาะกับผู้มีงานหลัก", "ยืดหยุ่นเวลาได้"],
+          },
+        ],
+        note: "รู้ผลทันทีภายในวันสัมภาษณ์",
+      },
+    }[step] || null
+  );
 }
 
 export { SUBMIT_URL, APPLICATION_SUBMIT_URL, CV_SUBMIT_URL, SCHOOL_OPTIONS };
