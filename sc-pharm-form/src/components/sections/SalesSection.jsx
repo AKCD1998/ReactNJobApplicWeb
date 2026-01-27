@@ -1,4 +1,18 @@
+import { useEffect } from "react";
+import { getEnabledBranchIds, getEnabledBranches } from "../../config/branches";
+
 export default function SalesSection({ show, form, onChange, errors }) {
+  const branchOptions = getEnabledBranches("sales");
+  const branchIds = getEnabledBranchIds("sales");
+
+  useEffect(() => {
+    if (form.salesBranchPreference && !branchIds.includes(form.salesBranchPreference)) {
+      onChange({
+        target: { name: "salesBranchPreference", value: "" },
+      });
+    }
+  }, [form.salesBranchPreference, branchIds, onChange]);
+
   if (!show) return null;
 
   return (
@@ -8,16 +22,16 @@ export default function SalesSection({ show, form, onChange, errors }) {
       <div className="question-block">
         <div className="question-label">สาขาที่ต้องการทำงาน</div>
         <div className="option-grid">
-          {["สาขาวัดช่องลม", "สาขาตลาดแม่กลอง"].map((item) => (
-            <label key={item} className="option-item">
+          {branchOptions.map((branch) => (
+            <label key={branch.id} className="option-item">
               <input
                 type="radio"
                 name="salesBranchPreference"
-                value={item}
-                checked={form.salesBranchPreference === item}
+                value={branch.id}
+                checked={form.salesBranchPreference === branch.id}
                 onChange={onChange}
               />
-              <span>{item}</span>
+              <span>{branch.label}</span>
             </label>
           ))}
         </div>

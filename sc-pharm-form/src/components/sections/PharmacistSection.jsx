@@ -1,4 +1,21 @@
+import { useEffect } from "react";
+import { getEnabledBranchIds, getEnabledBranches } from "../../config/branches";
+
 export default function PharmacistSection({ show, form, onChange, schoolOptions, errors }) {
+  const branchOptions = getEnabledBranches("pharmacist");
+  const branchIds = getEnabledBranchIds("pharmacist");
+
+  useEffect(() => {
+    if (
+      form.pharmacistBranchPreference &&
+      !branchIds.includes(form.pharmacistBranchPreference)
+    ) {
+      onChange({
+        target: { name: "pharmacistBranchPreference", value: "" },
+      });
+    }
+  }, [form.pharmacistBranchPreference, branchIds, onChange]);
+
   if (!show) return null;
 
   return (
@@ -11,19 +28,16 @@ export default function PharmacistSection({ show, form, onChange, schoolOptions,
           className={`option-grid ${errors?.pharmacistBranchPreference ? "is-invalid" : ""}`}
           id="pharmacistBranchPreference-group"
         >
-          {[
-            "สาขาตลาดบางน้อย",
-            "สาขาวัดช่องลม",
-          ].map((item) => (
-            <label key={item} className="option-item">
+          {branchOptions.map((branch) => (
+            <label key={branch.id} className="option-item">
               <input
                 type="radio"
                 name="pharmacistBranchPreference"
-                value={item}
-                checked={form.pharmacistBranchPreference === item}
+                value={branch.id}
+                checked={form.pharmacistBranchPreference === branch.id}
                 onChange={onChange}
               />
-              <span>{item}</span>
+              <span>{branch.label}</span>
             </label>
           ))}
         </div>

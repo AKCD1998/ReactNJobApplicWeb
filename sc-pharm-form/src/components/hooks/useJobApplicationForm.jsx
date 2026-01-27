@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { INITIAL_FORM, SALES_DEFAULTS, PHARM_DEFAULTS } from "../constants/formDefaults";
 import { APPLICATION_SUBMIT_URL } from "../constants/options";
 import { getReferenceData } from "../constants/options";
+import { resolveBranchLabel } from "../../config/branches";
 
 const FORM_VERSION = "v1";
 
@@ -27,7 +28,7 @@ function buildPayload(form, clientTimeOverride) {
     major: form.major.trim(),
     positionApplied: form.positionApplied,
     pharmacistType: isPharmacist ? form.pharmacistType : "",
-    salesBranchPreference: isSales ? form.salesBranchPreference : "",
+    salesBranchPreference: isSales ? resolveBranchLabel(form.salesBranchPreference) : "",
     availableStartDateSales: isSales ? form.availableStartDateSales : "",
     referralSourceSales: isSales ? form.referralSourceSales : "",
     referralOtherSales:
@@ -35,7 +36,7 @@ function buildPayload(form, clientTimeOverride) {
     availableStartDate: isSales ? form.availableStartDateSales : form.availableStartDatePharmacist,
     referralSource: isSales ? form.referralSourceSales : form.referralSourcePharmacist,
     referralOther: isSales ? form.referralOtherSales.trim() : form.referralOtherPharmacist.trim(),
-    pharmacistBranchPreference: isPharmacist ? form.pharmacistBranchPreference : "",
+    pharmacistBranchPreference: isPharmacist ? resolveBranchLabel(form.pharmacistBranchPreference) : "",
     licenseNumber: isPharmacist ? form.licenseNumber.trim() : "",
     pharmacySchool: isPharmacist ? form.pharmacySchool : "",
     pharmacySchoolOther:
