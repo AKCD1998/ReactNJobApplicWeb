@@ -257,37 +257,7 @@ app.post("/api/apply/cv", (req, res) => {
       });
 
       console.log("[cv] sendgrid status:", response?.statusCode);
-      let gasWarning = null;
-      let gasPayload = null;
-      let gasMeta = null;
-
-      try {
-        gasPayload = {
-          type: "quick_cv",
-          submittedAt: timestamp,
-          positionApplied: position || "เภสัชกร",
-          resumeFileName: safeFilename,
-          resumeBase64: file.buffer.toString("base64"),
-          email: req.body?.email || "",
-          fullName: req.body?.fullName || "",
-          phone: req.body?.phone || "",
-        };
-
-        const gasResult = await forwardQuickCvToAppsScript(gasPayload);
-        if (!gasResult.ok) {
-          gasWarning = "quick_cv_forward_failed";
-        } else if (gasResult.json) {
-          gasMeta = gasResult.json;
-        }
-      } catch (gasError) {
-        gasWarning = "quick_cv_forward_failed";
-        console.error("[cv] GAS forward error:", gasError);
-      }
-
       const responseBody = { ok: true, message: "sent" };
-      if (gasWarning) responseBody.warning = gasWarning;
-      if (gasMeta?.fileUrl) responseBody.fileUrl = gasMeta.fileUrl;
-      if (gasMeta?.fileId) responseBody.fileId = gasMeta.fileId;
 
       return res.json(responseBody);
     } catch (sendError) {
