@@ -20,7 +20,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
     <>
       <div className="section-title">คำถามเฉพาะเภสัชกร</div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="pharmacistBranchPreference">
         <div className="question-label">สาขาที่ต้องการทำงาน<span className="required-star">*</span></div>
         <div
           className={`option-grid ${errors?.pharmacistBranchPreference ? "is-invalid" : ""}`}
@@ -44,7 +44,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
         ) : null}
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="licenseNumber">
         <label className="question-label" htmlFor="licenseNumber">
           เลขใบประกอบวิชาชีพ (ระบุแค่ตัวเลขหลัง ภ.)<span className="required-star">*</span>
         </label>
@@ -62,7 +62,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
         ) : null}
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="pharmacySchool">
         <label className="question-label" htmlFor="pharmacySchool">
           สถาบันที่จบเภสัชศาสตร์<span className="required-star">*</span>
         </label>
@@ -89,6 +89,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
             value={form.pharmacySchoolOther}
             onChange={onChange}
             className="gf-input"
+            data-field-key="pharmacySchoolOther"
           />
         ) : null}
         {errors?.pharmacySchool ? (
@@ -96,7 +97,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
         ) : null}
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="availableStartDatePharmacist">
         <label className="question-label" htmlFor="availableStartDatePharmacist">
           วันที่เริ่มงานได้<span className="required-star">*</span>
           <input
@@ -115,7 +116,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
       </div>
 
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="referralSourcePharmacist">
         <div className="question-label">
           ช่องทางที่รู้จักเรา<span className="required-star">*</span>
         </div>
@@ -145,6 +146,7 @@ export default function PharmacistSection({ form, onChange, schoolOptions, error
             value={form.referralOtherPharmacist}
             onChange={onChange}
             className={`gf-input ${errors?.referralOtherPharmacist ? "is-invalid" : ""}`}
+            data-field-key="referralOtherPharmacist"
           />
         ) : null}
         {errors?.referralSourcePharmacist ? (

@@ -159,6 +159,11 @@ a:hover {
   gap: 16px;
 }
 
+.question-block .field-col {
+  display: grid;
+  gap: 6px;
+}
+
 .question-label {
   font-weight: 600;
   font-size: 14px;
@@ -366,6 +371,12 @@ a:hover {
   min-width: 140px;
 }
 
+.submit-btn.submit-disabled:not(:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: saturate(0.8);
+}
+
 .submit-btn:disabled {
   opacity: 0.7;
   cursor: wait;
@@ -387,6 +398,75 @@ a:hover {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 12px;
+}
+
+.guide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.guide-overlay.is-active {
+  opacity: 1;
+}
+
+.guide-highlight,
+.guide-highlight-exit {
+  position: relative;
+  z-index: 60;
+  border-radius: 12px;
+}
+
+.guide-highlight {
+  background: #ffffff;
+  animation:
+    guidePulseWarmup 0.25s ease-out,
+    guideFlash 1.15s ease-in-out 0.25s infinite;
+}
+
+.guide-highlight-exit {
+  background: #ffffff;
+  animation: guideFadeOut 0.32s ease forwards;
+}
+
+@keyframes guidePulseWarmup {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 222, 89, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 6px rgba(255, 222, 89, 0.45);
+  }
+}
+
+@keyframes guideFlash {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 6px rgba(255, 222, 89, 0.55),
+      0 0 0 2px rgba(255, 255, 255, 0.9);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.85),
+      0 0 0 2px rgba(255, 222, 89, 0.95);
+  }
+}
+
+@keyframes guideFadeOut {
+  0% {
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.65),
+      0 0 0 2px rgba(255, 222, 89, 0.8);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 222, 89, 0);
+    opacity: 0;
+  }
 }
 
 body,
@@ -417,6 +497,20 @@ body,
   .theme-toggle,
   .submit-btn {
     transition: none;
+  }
+
+  .guide-overlay {
+    transition: none;
+  }
+
+  .guide-highlight {
+    animation: none;
+    box-shadow: 0 0 0 6px rgba(255, 222, 89, 0.65);
+  }
+
+  .guide-highlight-exit {
+    animation: none;
+    opacity: 0.4;
   }
 }
 

@@ -1,11 +1,11 @@
 export default function ReferenceCard({ referenceData }) {
   const data = referenceData || {
-    title: "ข้อมูลอ้างอิง",
+    title: "กรุณาระบุสายงานที่ต้องการสมัคร",
     image: "",
     sections: [
       {
         heading: "รายละเอียด",
-        items: ["ยังไม่มีข้อมูลอ้างอิงสำหรับตำแหน่งนี้"],
+        items: ["กรุณาระบุสายงานที่ต้องการสมัคร"],
       },
     ],
     note: "",

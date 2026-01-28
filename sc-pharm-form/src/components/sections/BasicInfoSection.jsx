@@ -18,7 +18,7 @@ export default function BasicInfoSection({ form, onChange, errors }) {
 
   return (
     <>
-     <div className="question-block">
+     <div className="question-block" data-field-key="email">
 
       <label className="question-label" htmlFor="email">
         อีเมล<span className="required-star">*</span>
@@ -39,7 +39,7 @@ export default function BasicInfoSection({ form, onChange, errors }) {
 
 
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="fullName">
 
         <label className="question-label" htmlFor="fullName">
           ชื่อ-นามสกุล<span className="required-star">*</span>
@@ -79,7 +79,7 @@ export default function BasicInfoSection({ form, onChange, errors }) {
 
 
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="sex">
 
         <div className="question-label">
           เพศ<span className="required-star">*</span>
@@ -99,10 +99,10 @@ export default function BasicInfoSection({ form, onChange, errors }) {
 
 
       <div className="question-block two-col">
-
-        <label className="question-label" htmlFor="age">
-          อายุ<span className="required-star">*</span>
-
+        <div className="field-col" data-field-key="age">
+          <label className="question-label" htmlFor="age">
+            อายุ<span className="required-star">*</span>
+          </label>
           <input
             id="age"
             name="age"
@@ -114,15 +114,13 @@ export default function BasicInfoSection({ form, onChange, errors }) {
             className={`gf-input ${errors?.age ? "is-invalid" : ""}`}
             required
           />
-        </label>
-        {errors?.age ? <div className="error-text">{errors.age.message}</div> : null}
+          {errors?.age ? <div className="error-text">{errors.age.message}</div> : null}
+        </div>
 
-
-
-        <label className="question-label" htmlFor="phone">
-
-          เบอร์โทร<span className="required-star">*</span>
-          
+        <div className="field-col" data-field-key="phone">
+          <label className="question-label" htmlFor="phone">
+            เบอร์โทร<span className="required-star">*</span>
+          </label>
           <input
             id="phone"
             name="phone"
@@ -135,8 +133,8 @@ export default function BasicInfoSection({ form, onChange, errors }) {
             autoComplete="tel"
             required
           />
-        </label>
-        {errors?.phone ? <div className="error-text">{errors.phone.message}</div> : null}
+          {errors?.phone ? <div className="error-text">{errors.phone.message}</div> : null}
+        </div>
       </div>
 
 

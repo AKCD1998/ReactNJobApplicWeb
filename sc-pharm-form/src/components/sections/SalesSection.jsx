@@ -17,7 +17,7 @@ export default function SalesSection({ form, onChange, errors }) {
     <>
       <div className="section-title">คำถามเฉพาะพนักงานขายหน้าร้าน</div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="salesBranchPreference">
         <div className="question-label">สาขาที่ต้องการทำงาน</div>
         <div className="option-grid">
           {branchOptions.map((branch) => (
@@ -35,7 +35,7 @@ export default function SalesSection({ form, onChange, errors }) {
         </div>
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="availableStartDateSales">
         <label className="question-label" htmlFor="availableStartDateSales">
           วันที่เริ่มงานได้<span className="required-star">*</span>
           <input
@@ -53,7 +53,7 @@ export default function SalesSection({ form, onChange, errors }) {
         ) : null}
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="referralSourceSales">
         <div className="question-label">
           ช่องทางที่รู้จักเรา<span className="required-star">*</span>
         </div>
@@ -83,6 +83,7 @@ export default function SalesSection({ form, onChange, errors }) {
             value={form.referralOtherSales}
             onChange={onChange}
             className={`gf-input ${errors?.referralOtherSales ? "is-invalid" : ""}`}
+            data-field-key="referralOtherSales"
           />
         ) : null}
         {errors?.referralSourceSales ? (

@@ -38,7 +38,7 @@ export default function EducationSection({ form, onChange, errors }) {
         />
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="educationLevel">
         <label className="question-label" htmlFor="educationLevel">
           ระดับการศึกษา<span className="required-star">*</span>
         </label>
@@ -65,6 +65,7 @@ export default function EducationSection({ form, onChange, errors }) {
             value={form.educationLevelOther}
             onChange={onChange}
             className="gf-input"
+            data-field-key="educationLevelOther"
           />
         ) : null}
         {errors?.educationLevel ? (
@@ -72,7 +73,7 @@ export default function EducationSection({ form, onChange, errors }) {
         ) : null}
       </div>
 
-      <div className="question-block">
+      <div className="question-block" data-field-key="instituteName">
         <label className="question-label" htmlFor="instituteName">
           ชื่อสถาบัน<span className="required-star">*</span>
         </label>
