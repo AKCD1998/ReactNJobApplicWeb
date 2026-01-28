@@ -24,7 +24,27 @@ const cvUpload = multer({
   limits: { fileSize: CV_FILE_LIMIT },
 });
 
-app.use(cors({ origin: "http://localhost:5173" }));
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "https://akcd1998.github.io",
+];
+const allowedOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowList = allowedOrigins.length ? allowedOrigins : defaultAllowedOrigins;
+      if (!origin || allowList.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+  })
+);
 app.use(express.json({ limit: "15mb" }));
 
 if (process.env.SENDGRID_API_KEY) {

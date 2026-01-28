@@ -6,10 +6,17 @@ const SUBMIT_URL =
 
 /**
  * IMPORTANT:
- * - Production ต้องตั้งค่า VITE_API_BASE_URL เป็นโดเมน backend จริง
+ * - Production ต้องตั้งค่า VITE_API_BASE_URL เป็นโดเมน backend จริง (ห้ามใส่ /api ต่อท้าย)
  * - Local dev ถ้าไม่ตั้ง จะ fallback ไป http://localhost:3003
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3003";
+const normalizeApiBase = (base) => {
+  if (!base) return "";
+  const trimmed = base.trim().replace(/\/+$/, "");
+  return trimmed.replace(/\/api$/i, "");
+};
+
+const API_BASE =
+  normalizeApiBase(import.meta.env.VITE_API_BASE_URL) || "http://localhost:3003";
 
 const APPLICATION_SUBMIT_URL = `${API_BASE}/api/submit-application`;
 const CV_SUBMIT_URL = `${API_BASE}/api/apply/cv`;
