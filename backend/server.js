@@ -107,9 +107,53 @@ function verifyLineSignature(req) {
 
 function parseCommaList(value) {
   return String(value || "")
-    .split(",")
-    .map((entry) => entry.trim())
+    .replace(/[，、؛]/g, ",")
+    .split(/[,\n\r]+/)
+    .map((entry) => entry.replace(/[\u200B-\u200D\uFEFF]/g, "").trim())
     .filter(Boolean);
+}
+
+function maskLineRecipientId(value) {
+  const id = String(value || "").trim();
+  if (!id) return "";
+  if (id.length <= 12) return `${id.slice(0, 4)}...`;
+  return `${id.slice(0, 6)}...${id.slice(-4)}`;
+}
+
+async function pushLineMessages({ token, to, messages }) {
+  const url = "https://api.line.me/v2/bot/message/push";
+  const results = [];
+
+  for (const recipientId of to) {
+    const res = await fetchRequest(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ to: recipientId, messages }),
+    });
+
+    const responseText = await res.text().catch(() => "");
+    if (!res.ok) {
+      console.error(
+        "[line] Messaging API push error:",
+        maskLineRecipientId(recipientId),
+        res.status,
+        responseText
+      );
+    }
+
+    results.push({
+      to: maskLineRecipientId(recipientId),
+      ok: res.ok,
+      status: res.status,
+      body: responseText || "",
+      error: res.ok ? null : responseText || `LINE Messaging API returned ${res.status}`,
+    });
+  }
+
+  return results;
 }
 
 function formatBangkokDateTime(value) {
@@ -228,7 +272,7 @@ async function sendLineMessage({ messages }) {
   const mode = String(process.env.LINE_NOTIFY_MODE || "multicast")
     .trim()
     .toLowerCase();
-  const userIds = parseCommaList(process.env.LINE_NOTIFY_USER_IDS);
+  const userIds = Array.from(new Set(parseCommaList(process.env.LINE_NOTIFY_USER_IDS)));
 
   const baseUrl = "https://api.line.me/v2/bot/message";
   let url = "";
@@ -252,30 +296,7 @@ async function sendLineMessage({ messages }) {
 
   try {
     if (mode === "push") {
-      const results = [];
-      for (const to of userIds) {
-        const res = await fetchRequest(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ to, messages }),
-        });
-
-        const responseText = await res.text().catch(() => "");
-        if (!res.ok) {
-          console.error("[line] Messaging API error:", res.status, responseText);
-        }
-        results.push({
-          to,
-          ok: res.ok,
-          status: res.status,
-          body: responseText || "",
-          error: res.ok ? null : responseText || `LINE Messaging API returned ${res.status}`,
-        });
-      }
-
+      const results = await pushLineMessages({ token, to: userIds, messages });
       const allOk = results.every((entry) => entry.ok);
       return allOk ? { ok: true, results } : { ok: false, results };
     }
@@ -292,6 +313,19 @@ async function sendLineMessage({ messages }) {
     const responseText = await res.text().catch(() => "");
     if (!res.ok) {
       console.error("[line] Messaging API error:", res.status, responseText);
+
+      if (mode === "multicast" && userIds.length > 1) {
+        console.warn(
+          "[line] Multicast failed; falling back to push:",
+          userIds.map(maskLineRecipientId).join(", ")
+        );
+        const results = await pushLineMessages({ token, to: userIds, messages });
+        const allOk = results.every((entry) => entry.ok);
+        return allOk
+          ? { ok: true, fallback: "push", multicastStatus: res.status, results }
+          : { ok: false, fallback: "push", multicastStatus: res.status, results };
+      }
+
       return {
         ok: false,
         status: res.status,
@@ -424,6 +458,7 @@ function sanitizeFilename(filename) {
 }
 
 app.get("/health", (req, res) => res.json({ ok: true }));
+app.get("/", (req, res) => res.status(200).send("OK"));
 
 app.post("/api/line/webhook", (req, res) => {
   const verification = verifyLineSignature(req);
