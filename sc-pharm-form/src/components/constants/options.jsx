@@ -18,8 +18,24 @@ const normalizeApiBase = (base) => {
 const API_BASE =
   normalizeApiBase(import.meta.env.VITE_API_BASE_URL) || "http://localhost:3003";
 
+const resolveApiUrl = (input, baseUrl) => {
+  const value = String(input || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  const needsSlash = value.startsWith("/") ? "" : "/";
+  return `${baseUrl}${needsSlash}${value}`;
+};
+
 const APPLICATION_SUBMIT_URL = `${API_BASE}/api/submit-application`;
 const CV_SUBMIT_URL = `${API_BASE}/api/apply/cv`;
+const LINE_NOTIFY_URL = resolveApiUrl(
+  import.meta.env.VITE_LINE_NOTIFY_ENDPOINT || "/api/notify/line/job-application",
+  API_BASE
+);
+const LINE_CV_NOTIFY_URL = resolveApiUrl(
+  import.meta.env.VITE_LINE_CV_NOTIFY_ENDPOINT || "/api/line/notify",
+  API_BASE
+);
 
 const SALES_REF_IMAGE = "";
 const PHARM_FULL_REF_IMAGE = "";
@@ -135,4 +151,11 @@ export function getReferenceData(step) {
   );
 }
 
-export { SUBMIT_URL, APPLICATION_SUBMIT_URL, CV_SUBMIT_URL, SCHOOL_OPTIONS };
+export {
+  SUBMIT_URL,
+  APPLICATION_SUBMIT_URL,
+  CV_SUBMIT_URL,
+  LINE_NOTIFY_URL,
+  LINE_CV_NOTIFY_URL,
+  SCHOOL_OPTIONS,
+};

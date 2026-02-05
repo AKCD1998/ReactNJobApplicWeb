@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
-import { CV_SUBMIT_URL } from "../components/constants/options";
+import { CV_SUBMIT_URL, LINE_CV_NOTIFY_URL } from "../components/constants/options";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const ENABLE_LINE_NOTIFY =
+  String(import.meta.env.VITE_ENABLE_LINE_NOTIFY || "").trim().toLowerCase() === "true";
+const ADMIN_EMAIL = "admin@scgroup1989.com";
 
 const formatFileSize = (bytes) => {
   if (bytes >= 1024 * 1024) {
@@ -173,6 +176,32 @@ export default function CvUploadPage({ onNavigate }) {
       }
 
       setModalType("success");
+
+      if (ENABLE_LINE_NOTIFY) {
+        void (async () => {
+          try {
+            const notifyRes = await fetch(LINE_CV_NOTIFY_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                page: "CvUploadPage",
+                emailTo: ADMIN_EMAIL,
+                cvFilename: selectedFile.name,
+              }),
+            });
+
+            const notifyData = await notifyRes.json().catch(() => null);
+            if (!notifyRes.ok || !notifyData?.ok) {
+              console.warn("[LINE Notify][CV] failed (non-blocking):", {
+                status: notifyRes.status,
+                body: notifyData,
+              });
+            }
+          } catch (notifyError) {
+            console.warn("[LINE Notify][CV] request error (non-blocking):", notifyError);
+          }
+        })();
+      }
     } catch (submitError) {
       console.error("CV upload error:", submitError);
       setModalType("error");

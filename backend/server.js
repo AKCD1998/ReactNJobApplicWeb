@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const multer = require("multer");
 const sgMail = require("@sendgrid/mail");
 const path = require("path");
+const crypto = require("crypto");
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 3003;
 const SUBMIT_URL = process.env.SUBMIT_URL;
 const QUICK_CV_SUBMIT_URL = process.env.QUICK_CV_SUBMIT_URL || SUBMIT_URL;
 const HR_EMAIL = process.env.HR_EMAIL || process.env.HR_TO_EMAIL;
+const LINE_ADMIN_URL = process.env.LINE_NOTIFY_ADMIN_URL || "";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -45,7 +47,17 @@ app.use(
     },
   })
 );
-app.use(express.json({ limit: "15mb" }));
+app.use(
+  express.json({
+    limit: "15mb",
+    verify: (req, res, buf) => {
+      const url = req.originalUrl || req.url || "";
+      if (url.startsWith("/api/line/webhook")) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -63,6 +75,236 @@ function stripDataUrl(dataUrl) {
   const marker = "base64,";
   const idx = dataUrl.indexOf(marker);
   return idx >= 0 ? dataUrl.slice(idx + marker.length) : dataUrl;
+}
+
+function verifyLineSignature(req) {
+  const secret = process.env.LINE_CHANNEL_SECRET;
+  if (!secret) {
+    return { ok: true, skipped: true };
+  }
+
+  const signature = req.get("x-line-signature");
+  if (!signature) {
+    return { ok: false, status: 400, error: "Missing x-line-signature header" };
+  }
+
+  const raw = req.rawBody;
+  if (!raw || !(raw instanceof Buffer)) {
+    return { ok: false, status: 400, error: "Missing raw request body for signature verification" };
+  }
+
+  const digest = crypto.createHmac("sha256", secret).update(raw).digest("base64");
+  const signatureBytes = Buffer.from(signature, "base64");
+  const digestBytes = Buffer.from(digest, "base64");
+
+  if (signatureBytes.length !== digestBytes.length) {
+    return { ok: false, status: 401, error: "Invalid signature length" };
+  }
+
+  const matches = crypto.timingSafeEqual(signatureBytes, digestBytes);
+  return matches ? { ok: true } : { ok: false, status: 401, error: "Invalid signature" };
+}
+
+function parseCommaList(value) {
+  return String(value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function formatBangkokDateTime(value) {
+  const date = value ? new Date(value) : new Date();
+  if (Number.isNaN(date.getTime())) return String(value || "");
+
+  const normalizeDayPeriod = (input) => {
+    const raw = String(input || "").toLowerCase();
+    const cleaned = raw.replace(/\./g, "");
+    return cleaned === "am" || cleaned === "pm" ? cleaned : raw || "am";
+  };
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Bangkok",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).formatToParts(date);
+
+    const get = (type) => parts.find((p) => p.type === type)?.value || "";
+    const day = get("day");
+    const month = get("month");
+    const year = get("year");
+    const hour = get("hour");
+    const minute = get("minute");
+    const dayPeriod = normalizeDayPeriod(get("dayPeriod"));
+
+    if (day && month && year && hour && minute) {
+      return `${day}-${month}-${year} ${hour}.${minute} ${dayPeriod} (GMT+7)`;
+    }
+  } catch (error) {
+    // Fall through to manual formatting.
+  }
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const shifted = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const day = pad2(shifted.getUTCDate());
+  const month = pad2(shifted.getUTCMonth() + 1);
+  const year = shifted.getUTCFullYear();
+  const minute = pad2(shifted.getUTCMinutes());
+
+  let hour24 = shifted.getUTCHours();
+  const dayPeriod = hour24 >= 12 ? "pm" : "am";
+  let hour12 = hour24 % 12;
+  if (hour12 === 0) hour12 = 12;
+
+  return `${day}-${month}-${year} ${pad2(hour12)}.${minute} ${dayPeriod} (GMT+7)`;
+}
+
+function formatBangkokDateTimeThai(value) {
+  const date = value ? new Date(value) : new Date();
+  if (Number.isNaN(date.getTime())) return String(value || "");
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Bangkok",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(date);
+
+    const get = (type) => parts.find((p) => p.type === type)?.value || "";
+    const day = get("day");
+    const month = get("month");
+    const year = get("year");
+    const hourRaw = get("hour");
+    const minute = get("minute");
+    const hour = hourRaw === "24" ? "00" : hourRaw;
+
+    if (day && month && year && hour && minute) {
+      return `${day}/${month}/${year} ${hour}:${minute} น. (GMT+7)`;
+    }
+  } catch (error) {
+    // Fall through to manual formatting.
+  }
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const shifted = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const day = pad2(shifted.getUTCDate());
+  const month = pad2(shifted.getUTCMonth() + 1);
+  const year = shifted.getUTCFullYear();
+  const hour = pad2(shifted.getUTCHours());
+  const minute = pad2(shifted.getUTCMinutes());
+
+  return `${day}/${month}/${year} ${hour}:${minute} น. (GMT+7)`;
+}
+
+function buildLineJobApplicationText(fields) {
+  const time = fields.clientTime || new Date().toISOString();
+  const adminUrl = fields.adminUrl || LINE_ADMIN_URL;
+  const lines = ["📩 แจ้งเตือนผู้สมัครงาน"];
+
+  if (fields.fullName) lines.push(`ชื่อ: ${fields.fullName}`);
+  if (fields.positionApplied) lines.push(`ตำแหน่ง: ${fields.positionApplied}`);
+  if (fields.phone) lines.push(`โทรศัพท์: ${fields.phone}`);
+  if (fields.email) lines.push(`อีเมล: ${fields.email}`);
+  lines.push(`เวลา: ${formatBangkokDateTime(time)}`);
+  if (adminUrl) lines.push(`ลิงก์ดูรายละเอียด: ${adminUrl}`);
+
+  return lines.join("\n");
+}
+
+async function sendLineMessage({ messages }) {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!token) {
+    return { ok: false, skipped: true, error: "Missing LINE_CHANNEL_ACCESS_TOKEN" };
+  }
+
+  const mode = String(process.env.LINE_NOTIFY_MODE || "multicast")
+    .trim()
+    .toLowerCase();
+  const userIds = parseCommaList(process.env.LINE_NOTIFY_USER_IDS);
+
+  const baseUrl = "https://api.line.me/v2/bot/message";
+  let url = "";
+  let body = null;
+
+  if (mode === "broadcast") {
+    url = `${baseUrl}/broadcast`;
+    body = { messages };
+  } else if (mode === "push") {
+    if (!userIds.length) {
+      return { ok: false, skipped: true, error: "Missing LINE_NOTIFY_USER_IDS for push mode" };
+    }
+    url = `${baseUrl}/push`;
+  } else {
+    if (!userIds.length) {
+      return { ok: false, skipped: true, error: "Missing LINE_NOTIFY_USER_IDS for multicast mode" };
+    }
+    url = `${baseUrl}/multicast`;
+    body = { to: userIds, messages };
+  }
+
+  try {
+    if (mode === "push") {
+      const results = [];
+      for (const to of userIds) {
+        const res = await fetchRequest(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ to, messages }),
+        });
+
+        const responseText = await res.text().catch(() => "");
+        if (!res.ok) {
+          console.error("[line] Messaging API error:", res.status, responseText);
+        }
+        results.push({
+          to,
+          ok: res.ok,
+          status: res.status,
+          body: responseText || "",
+          error: res.ok ? null : responseText || `LINE Messaging API returned ${res.status}`,
+        });
+      }
+
+      const allOk = results.every((entry) => entry.ok);
+      return allOk ? { ok: true, results } : { ok: false, results };
+    }
+
+    const res = await fetchRequest(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await res.text().catch(() => "");
+    if (!res.ok) {
+      console.error("[line] Messaging API error:", res.status, responseText);
+      return {
+        ok: false,
+        status: res.status,
+        body: responseText || "",
+        error: responseText || `LINE Messaging API returned ${res.status}`,
+      };
+    }
+
+    return { ok: true, status: res.status, body: responseText || "" };
+  } catch (error) {
+    console.error("[line] Messaging API request failed:", error);
+    return { ok: false, status: 500, error: error.message || "LINE request failed" };
+  }
 }
 
 async function forwardToAppsScript(payload) {
@@ -182,6 +424,117 @@ function sanitizeFilename(filename) {
 }
 
 app.get("/health", (req, res) => res.json({ ok: true }));
+
+app.post("/api/line/webhook", (req, res) => {
+  const verification = verifyLineSignature(req);
+  if (!verification.ok) {
+    console.warn("[line][webhook] signature verification failed:", verification.error);
+    return res.status(verification.status || 401).json({ ok: false, error: verification.error });
+  }
+
+  const events = req.body?.events;
+  if (!Array.isArray(events)) {
+    return res.json({ ok: true });
+  }
+
+  const seen = new Set();
+  events.forEach((event) => {
+    const userId = event?.source?.userId;
+    if (typeof userId !== "string" || !userId.trim()) return;
+    const normalized = userId.trim();
+    if (seen.has(normalized)) return;
+    seen.add(normalized);
+    console.log("[line][webhook] userId:", normalized, "event:", event?.type || "-");
+  });
+
+  if (verification.skipped) {
+    console.warn("[line][webhook] LINE_CHANNEL_SECRET not set; signature verification skipped.");
+  }
+
+  return res.json({ ok: true });
+});
+
+app.post("/api/notify/line/job-application", async (req, res) => {
+  const body = req.body || {};
+  const fields = {
+    fullName: typeof body.fullName === "string" ? body.fullName.trim() : "",
+    positionApplied: typeof body.positionApplied === "string" ? body.positionApplied.trim() : "",
+    phone: typeof body.phone === "string" ? body.phone.trim() : "",
+    email: typeof body.email === "string" ? body.email.trim() : "",
+    clientTime: typeof body.clientTime === "string" ? body.clientTime.trim() : "",
+    adminUrl: typeof body.adminUrl === "string" ? body.adminUrl.trim() : "",
+  };
+
+  const text = buildLineJobApplicationText(fields);
+  const result = await sendLineMessage({
+    messages: [
+      {
+        type: "text",
+        text,
+      },
+    ],
+  });
+
+  if (!result.ok && !result.skipped) {
+    console.warn("[line] Notification failed (non-blocking):", result);
+  }
+
+  return res.json(result);
+});
+
+app.post("/api/line/notify", async (req, res) => {
+  const body = req.body || {};
+  const payload = {
+    applicantName: typeof body.applicantName === "string" ? body.applicantName.trim() : "",
+    emailTo: typeof body.emailTo === "string" ? body.emailTo.trim() : "",
+    page: typeof body.page === "string" ? body.page.trim() : "",
+    cvFilename: typeof body.cvFilename === "string" ? body.cvFilename.trim() : "",
+  };
+
+  const mode = String(process.env.LINE_NOTIFY_MODE || "multicast")
+    .trim()
+    .toLowerCase();
+  if (mode === "broadcast") {
+    return res.json({
+      ok: false,
+      skipped: true,
+      error: "LINE_NOTIFY_MODE=broadcast is not supported for /api/line/notify",
+    });
+  }
+
+  const timestamp = new Date().toISOString();
+  const targetEmail = payload.emailTo || HR_EMAIL || "-";
+  const lines = [`📩 มีผู้สมัครส่งไฟล์ CV เข้าอีเมล ${targetEmail} แล้วครับ/ค่ะ`];
+
+  if (payload.applicantName) lines.push(`👤 ผู้สมัคร: ${payload.applicantName}`);
+  if (payload.cvFilename) lines.push(`📄 ไฟล์: ${payload.cvFilename}`);
+  if (payload.page) lines.push(`🧾 หน้า: ${payload.page}`);
+
+  lines.push(`⏰ เวลา: ${formatBangkokDateTimeThai(timestamp)}`);
+  lines.push("👉 รบกวนเข้าไปตรวจสอบอีเมลด้วยนะครับ");
+
+  const text = lines.join("\n");
+  const result = await sendLineMessage({
+    messages: [
+      {
+        type: "text",
+        text,
+      },
+    ],
+  });
+
+  if (result.ok) {
+    if (Array.isArray(result.results)) {
+      console.log("[line] CV notify push results:", result.results);
+    } else {
+      console.log("[line] CV notify status:", result.status, result.body || "");
+    }
+  } else if (!result.skipped) {
+    console.warn("[line] CV notify failed (non-blocking):", result);
+  }
+
+  return res.json(result);
+});
 
 app.post("/api/apply/cv", (req, res) => {
   cvUpload.single("cv")(req, res, async (err) => {

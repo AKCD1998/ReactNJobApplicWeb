@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { INITIAL_FORM, SALES_DEFAULTS, PHARM_DEFAULTS } from "../constants/formDefaults";
-import { APPLICATION_SUBMIT_URL } from "../constants/options";
-import { getReferenceData } from "../constants/options";
+import { APPLICATION_SUBMIT_URL, LINE_NOTIFY_URL, getReferenceData } from "../constants/options";
 import { resolveBranchLabel } from "../../config/branches";
 
 const FORM_VERSION = "v1";
+const ENABLE_LINE_NOTIFY =
+  String(import.meta.env.VITE_ENABLE_LINE_NOTIFY || "").trim().toLowerCase() === "true";
 
 function buildPayload(form, clientTimeOverride) {
   const isSales = form.positionApplied === "พนักงานขายหน้าร้าน";
@@ -179,6 +180,8 @@ export default function useJobApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState("");
   const [submitResult, setSubmitResult] = useState("");
+  const [lineNotifyStatus, setLineNotifyStatus] = useState("idle");
+  const [lineNotifyError, setLineNotifyError] = useState("");
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
 
@@ -286,6 +289,55 @@ export default function useJobApplicationForm() {
 
       setStatus("ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณที่สมัครงานกับเรา");
       setSubmitResult("success");
+
+      if (ENABLE_LINE_NOTIFY) {
+        void (async () => {
+          setLineNotifyStatus("sending");
+          setLineNotifyError("");
+
+          if (!LINE_NOTIFY_URL) {
+            setLineNotifyStatus("error");
+            setLineNotifyError("Missing VITE_LINE_NOTIFY_ENDPOINT");
+            console.warn("[LINE Notify] Missing endpoint configuration.");
+            return;
+          }
+
+          try {
+            const notifyRes = await fetch(LINE_NOTIFY_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                fullName: payload.fullName,
+                positionApplied: payload.positionApplied,
+                phone: payload.phone,
+                email: payload.email,
+                clientTime: payload.clientTime,
+              }),
+            });
+
+            const notifyData = await notifyRes.json().catch(() => null);
+            if (notifyRes.ok && notifyData?.ok) {
+              setLineNotifyStatus("ok");
+              return;
+            }
+
+            const errorMessage =
+              notifyData?.error ||
+              (notifyRes.ok ? "LINE notify returned ok=false" : `HTTP ${notifyRes.status}`);
+            setLineNotifyStatus(notifyData?.skipped ? "skipped" : "error");
+            setLineNotifyError(errorMessage);
+            console.warn("[LINE Notify] failed (non-blocking):", {
+              status: notifyRes.status,
+              body: notifyData,
+            });
+          } catch (notifyError) {
+            const errorMessage = notifyError?.message || String(notifyError);
+            setLineNotifyStatus("error");
+            setLineNotifyError(errorMessage);
+            console.warn("[LINE Notify] request error (non-blocking):", notifyError);
+          }
+        })();
+      }
     } catch (err) {
       console.error("SUBMIT ERROR:", err);
       setStatus("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
@@ -300,6 +352,8 @@ export default function useJobApplicationForm() {
     setErrors({});
     setStatus("");
     setSubmitResult("");
+    setLineNotifyStatus("idle");
+    setLineNotifyError("");
     setIsSubmitting(false);
   }
     const referenceStep = form.positionApplied === "พนักงานขายหน้าร้าน"
@@ -319,6 +373,11 @@ export default function useJobApplicationForm() {
       form, setForm,
       status,
       submitResult,
+      lineNotify: {
+        enabled: ENABLE_LINE_NOTIFY,
+        status: lineNotifyStatus,
+        error: lineNotifyError,
+      },
       errors,
       flags,
       referenceData,

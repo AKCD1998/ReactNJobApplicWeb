@@ -158,6 +158,7 @@ export default function JobApplicationForm() {
   const {
     isDark, setIsDark,
     form, status, submitResult, isSubmitting,
+    lineNotify,
     errors,
     flags: { showSalesBranch, showPharmBranch },
     handlers: {
@@ -546,6 +547,7 @@ export default function JobApplicationForm() {
           <div>
             targetNodeExists: {guideMode.targetKey ? String(targetNodeExists) : "n/a"}
           </div>
+          <div>lineNotify: {JSON.stringify(lineNotify)}</div>
         </div>
       ) : null}
       {modalType ? (
