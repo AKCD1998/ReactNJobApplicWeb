@@ -15,6 +15,12 @@ export const PHARM_DEFAULTS = {
   referralOtherPharmacist: "",
 };
 
+export const MARKETING_DEFAULTS = {
+  availableStartDateMarketing: "",
+  referralSourceMarketing: "",
+  referralOtherMarketing: "",
+};
+
 export const INITIAL_FORM = {
   email: "",
   fullName: "",
@@ -31,4 +37,5 @@ export const INITIAL_FORM = {
   pharmacistType: "",
   ...SALES_DEFAULTS,
   ...PHARM_DEFAULTS,
+  ...MARKETING_DEFAULTS,
 };

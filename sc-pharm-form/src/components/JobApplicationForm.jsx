@@ -7,15 +7,25 @@ import PositionSection from "./sections/PositionSection";
 import ReferenceCard from "./sections/ReferenceCard";
 import SubmitRow from "./sections/SubmitRow";
 import EducationSection from "./sections/EducationSection";
+import OnlineMarketingSection from "./sections/OnlineMarketingSection";
 import PharmacistSection from "./sections/PharmacistSection";
 import SalesSection from "./sections/SalesSection";
 import ThemeToggle from "./sections/ThemeToggle";
+import {
+  PHARM_POSITION_APPLIED,
+  POSITION_TYPES,
+  getEnabledPositionFromForm,
+  hasEnabledPositionType,
+  isPositionSelectionMissing,
+} from "../config/positions";
 
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const GUIDE_SCROLL_OFFSET = 120;
 const GUIDE_SCROLL_DURATION = 600;
 const GUIDE_OVERLAY_FADE_MS = 300;
 const GUIDE_HIGHLIGHT_EXIT_MS = 320;
+
+const getActivePositionType = (form) => getEnabledPositionFromForm(form)?.type || "";
 
 const REQUIRED_FIELD_CHECKS = [
   {
@@ -49,67 +59,96 @@ const REQUIRED_FIELD_CHECKS = [
   },
   { key: "instituteName", isMissing: (form) => !form.instituteName?.trim() },
   { key: "major", isMissing: (form) => !form.major?.trim() },
-  { key: "positionApplied", isMissing: (form) => !form.positionApplied },
+  { key: "positionApplied", isMissing: (form) => isPositionSelectionMissing(form) },
   {
     key: "pharmacistType",
-    isMissing: (form) => form.positionApplied === "เภสัชกร" && !form.pharmacistType,
+    isMissing: (form) =>
+      form.positionApplied === PHARM_POSITION_APPLIED &&
+      hasEnabledPositionType(POSITION_TYPES.PHARMACIST) &&
+      !form.pharmacistType,
   },
   {
     key: "salesBranchPreference",
     isMissing: (form) =>
-      form.positionApplied === "พนักงานขายหน้าร้าน" && !form.salesBranchPreference,
+      getActivePositionType(form) === POSITION_TYPES.SALES && !form.salesBranchPreference,
   },
   {
     key: "availableStartDateSales",
     isMissing: (form) =>
-      form.positionApplied === "พนักงานขายหน้าร้าน" && !form.availableStartDateSales,
+      getActivePositionType(form) === POSITION_TYPES.SALES && !form.availableStartDateSales,
   },
   {
     key: "referralSourceSales",
     isMissing: (form) =>
-      form.positionApplied === "พนักงานขายหน้าร้าน" && !form.referralSourceSales,
+      getActivePositionType(form) === POSITION_TYPES.SALES && !form.referralSourceSales,
   },
   {
     key: "referralOtherSales",
     isMissing: (form) =>
-      form.positionApplied === "พนักงานขายหน้าร้าน" &&
+      getActivePositionType(form) === POSITION_TYPES.SALES &&
       form.referralSourceSales === "อื่นๆ" &&
       !String(form.referralOtherSales || "").trim(),
   },
   {
+    key: "availableStartDateMarketing",
+    isMissing: (form) =>
+      getActivePositionType(form) === POSITION_TYPES.MARKETING &&
+      !form.availableStartDateMarketing,
+  },
+  {
+    key: "referralSourceMarketing",
+    isMissing: (form) =>
+      getActivePositionType(form) === POSITION_TYPES.MARKETING &&
+      !form.referralSourceMarketing,
+  },
+  {
+    key: "referralOtherMarketing",
+    isMissing: (form) =>
+      getActivePositionType(form) === POSITION_TYPES.MARKETING &&
+      form.referralSourceMarketing === "อื่นๆ" &&
+      !String(form.referralOtherMarketing || "").trim(),
+  },
+  {
     key: "pharmacistBranchPreference",
     isMissing: (form) =>
-      form.positionApplied === "เภสัชกร" && !form.pharmacistBranchPreference,
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
+      !form.pharmacistBranchPreference,
   },
   {
     key: "licenseNumber",
-    isMissing: (form) => form.positionApplied === "เภสัชกร" && !form.licenseNumber?.trim(),
+    isMissing: (form) =>
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
+      !form.licenseNumber?.trim(),
   },
   {
     key: "pharmacySchool",
-    isMissing: (form) => form.positionApplied === "เภสัชกร" && !form.pharmacySchool,
+    isMissing: (form) =>
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
+      !form.pharmacySchool,
   },
   {
     key: "pharmacySchoolOther",
     isMissing: (form) =>
-      form.positionApplied === "เภสัชกร" &&
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
       form.pharmacySchool === "อื่น" &&
       !String(form.pharmacySchoolOther || "").trim(),
   },
   {
     key: "availableStartDatePharmacist",
     isMissing: (form) =>
-      form.positionApplied === "เภสัชกร" && !form.availableStartDatePharmacist,
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
+      !form.availableStartDatePharmacist,
   },
   {
     key: "referralSourcePharmacist",
     isMissing: (form) =>
-      form.positionApplied === "เภสัชกร" && !form.referralSourcePharmacist,
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
+      !form.referralSourcePharmacist,
   },
   {
     key: "referralOtherPharmacist",
     isMissing: (form) =>
-      form.positionApplied === "เภสัชกร" &&
+      getActivePositionType(form) === POSITION_TYPES.PHARMACIST &&
       form.referralSourcePharmacist === "อื่นๆ" &&
       !String(form.referralOtherPharmacist || "").trim(),
   },
@@ -160,7 +199,7 @@ export default function JobApplicationForm() {
     form, status, submitResult, isSubmitting,
     lineNotify,
     errors,
-    flags: { showSalesBranch, showPharmBranch },
+    activePositionType,
     handlers: {
       onChange,
       onPositionChange,
@@ -170,6 +209,9 @@ export default function JobApplicationForm() {
     },
     referenceData,
     } = useJobApplicationForm();
+  const showSalesBranch = activePositionType === POSITION_TYPES.SALES;
+  const showPharmBranch = activePositionType === POSITION_TYPES.PHARMACIST;
+  const showMarketingBranch = activePositionType === POSITION_TYPES.MARKETING;
 
   const [modalType, setModalType] = useState(null);
   const [guideMode, setGuideMode] = useState({ active: false, targetKey: null });
@@ -498,6 +540,13 @@ export default function JobApplicationForm() {
                 onChange={onChange}
                 errors={errors}
                 schoolOptions={SCHOOL_OPTIONS}
+              />
+            ) : null}
+            {showMarketingBranch ? (
+              <OnlineMarketingSection
+                form={form}
+                onChange={onChange}
+                errors={errors}
               />
             ) : null}
 

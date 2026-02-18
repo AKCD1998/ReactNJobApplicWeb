@@ -40,6 +40,7 @@ const LINE_CV_NOTIFY_URL = resolveApiUrl(
 const SALES_REF_IMAGE = "";
 const PHARM_FULL_REF_IMAGE = "";
 const PHARM_PART_REF_IMAGE = "";
+const MARKETING_REF_IMAGE = "";
 
 const SCHOOL_OPTIONS = [
   "มหาวิทยาลัยรังสิต (Rangsit University)",
@@ -143,6 +144,38 @@ export function getReferenceData(step) {
           {
             heading: "คุณสมบัติ",
             items: ["เหมาะกับผู้มีงานหลัก", "ยืดหยุ่นเวลาได้"],
+          },
+        ],
+        note: "รู้ผลทันทีภายในวันสัมภาษณ์",
+      },
+
+      marketing: {
+        title: "พนักงานการตลาดออนไลน์",
+        image: MARKETING_REF_IMAGE,
+        sections: [
+          {
+            heading: "รับสมัครพนักงาน",
+            items: ["พนักงานการตลาดออนไลน์ (Online Marketing Officer)"],
+          },
+          {
+            heading: "รายได้และเวลาทำงาน",
+            items: ["รายได้ตามโครงสร้างบริษัท + อินเซนทีฟตามผลงาน", "ทำงาน 6 วัน/สัปดาห์ (หยุด 1 วัน)"],
+          },
+          {
+            heading: "สวัสดิการ",
+            items: ["ประกันสังคม", "โบนัสตามผลประกอบการ", "งานเลี้ยงประจำปี"],
+          },
+          {
+            heading: "คุณสมบัติ",
+            items: ["ใช้ Social Media ได้คล่อง", "สื่อสารและเขียนคอนเทนต์ได้ดี", "มีความรับผิดชอบและทำงานเป็นทีมได้"],
+          },
+          {
+            heading: "หน้าที่รับผิดชอบ",
+            items: ["วางแผนและดูแลคอนเทนต์ออนไลน์", "ดูแลช่องทาง Facebook/Line OA/แพลตฟอร์มงาน", "ติดตามผลและสรุปรายงานการตลาด"],
+          },
+          {
+            heading: "สถานที่ทำงาน",
+            items: ["สำนักงานใหญ่ศิริชัยเภสัช (ตามที่บริษัทกำหนด)"],
           },
         ],
         note: "รู้ผลทันทีภายในวันสัมภาษณ์",

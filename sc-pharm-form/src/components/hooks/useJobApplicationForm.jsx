@@ -1,15 +1,31 @@
 import { useMemo, useState } from "react";
-import { INITIAL_FORM, SALES_DEFAULTS, PHARM_DEFAULTS } from "../constants/formDefaults";
+import {
+  INITIAL_FORM,
+  SALES_DEFAULTS,
+  PHARM_DEFAULTS,
+  MARKETING_DEFAULTS,
+} from "../constants/formDefaults";
 import { APPLICATION_SUBMIT_URL, LINE_NOTIFY_URL, getReferenceData } from "../constants/options";
 import { resolveBranchLabel } from "../../config/branches";
+import {
+  PHARM_POSITION_APPLIED,
+  POSITION_IDS,
+  POSITION_TYPES,
+  getEnabledPositionFromForm,
+  getReferenceStepFromForm,
+  hasEnabledPositionType,
+  isPositionSelectionMissing,
+} from "../../config/positions";
 
 const FORM_VERSION = "v1";
 const ENABLE_LINE_NOTIFY =
   String(import.meta.env.VITE_ENABLE_LINE_NOTIFY || "").trim().toLowerCase() === "true";
 
 function buildPayload(form, clientTimeOverride) {
-  const isSales = form.positionApplied === "พนักงานขายหน้าร้าน";
-  const isPharmacist = form.positionApplied === "เภสัชกร";
+  const activePositionType = getEnabledPositionFromForm(form)?.type || "";
+  const isSales = activePositionType === POSITION_TYPES.SALES;
+  const isPharmacist = activePositionType === POSITION_TYPES.PHARMACIST;
+  const isMarketing = activePositionType === POSITION_TYPES.MARKETING;
   const clientTime = clientTimeOverride || new Date().toISOString();
 
   return {
@@ -34,9 +50,31 @@ function buildPayload(form, clientTimeOverride) {
     referralSourceSales: isSales ? form.referralSourceSales : "",
     referralOtherSales:
       isSales && form.referralSourceSales === "อื่นๆ" ? form.referralOtherSales.trim() : "",
-    availableStartDate: isSales ? form.availableStartDateSales : form.availableStartDatePharmacist,
-    referralSource: isSales ? form.referralSourceSales : form.referralSourcePharmacist,
-    referralOther: isSales ? form.referralOtherSales.trim() : form.referralOtherPharmacist.trim(),
+    availableStartDateMarketing: isMarketing ? form.availableStartDateMarketing : "",
+    referralSourceMarketing: isMarketing ? form.referralSourceMarketing : "",
+    referralOtherMarketing:
+      isMarketing && form.referralSourceMarketing === "อื่นๆ" ? form.referralOtherMarketing.trim() : "",
+    availableStartDate: isSales
+      ? form.availableStartDateSales
+      : isPharmacist
+        ? form.availableStartDatePharmacist
+        : isMarketing
+          ? form.availableStartDateMarketing
+          : "",
+    referralSource: isSales
+      ? form.referralSourceSales
+      : isPharmacist
+        ? form.referralSourcePharmacist
+        : isMarketing
+          ? form.referralSourceMarketing
+          : "",
+    referralOther: isSales
+      ? form.referralOtherSales.trim()
+      : isPharmacist
+        ? form.referralOtherPharmacist.trim()
+        : isMarketing
+          ? form.referralOtherMarketing.trim()
+          : "",
     pharmacistBranchPreference: isPharmacist ? resolveBranchLabel(form.pharmacistBranchPreference) : "",
     licenseNumber: isPharmacist ? form.licenseNumber.trim() : "",
     pharmacySchool: isPharmacist ? form.pharmacySchool : "",
@@ -77,10 +115,19 @@ function validateRequiredFields(form) {
   if (!form.educationLevel) addError("educationLevel", "กรุณากรอกข้อมูล", "educationLevel");
   if (!form.instituteName.trim()) addError("instituteName", "กรุณากรอกข้อมูล", "instituteName");
   if (!form.major.trim()) addError("major", "กรุณากรอกข้อมูล", "major");
-  if (!form.positionApplied) addError("positionApplied", "กรุณากรอกข้อมูล", "positionApplied-group");
+  const activePositionType = getEnabledPositionFromForm(form)?.type || "";
+  if (isPositionSelectionMissing(form)) {
+    addError("positionApplied", "กรุณากรอกข้อมูล", "positionApplied-group");
+  }
+  if (
+    form.positionApplied === PHARM_POSITION_APPLIED &&
+    hasEnabledPositionType(POSITION_TYPES.PHARMACIST) &&
+    !form.pharmacistType
+  ) {
+    addError("pharmacistType", "กรุณากรอกข้อมูล", "pharmacistType-group");
+  }
 
-  if (form.positionApplied === "เภสัชกร") {
-    if (!form.pharmacistType) addError("pharmacistType", "กรุณากรอกข้อมูล", "pharmacistType-group");
+  if (activePositionType === POSITION_TYPES.PHARMACIST) {
     if (!form.pharmacistBranchPreference) {
       addError("pharmacistBranchPreference", "กรุณากรอกข้อมูล", "pharmacistBranchPreference-group");
     }
@@ -97,7 +144,7 @@ function validateRequiredFields(form) {
     }
   }
 
-  if (form.positionApplied === "พนักงานขายหน้าร้าน") {
+  if (activePositionType === POSITION_TYPES.SALES) {
     if (!form.availableStartDateSales) {
       addError("availableStartDateSales", "กรุณากรอกข้อมูล", "availableStartDateSales");
     }
@@ -106,6 +153,18 @@ function validateRequiredFields(form) {
     }
     if (form.referralSourceSales === "อื่นๆ" && !form.referralOtherSales.trim()) {
       addError("referralOtherSales", "กรุณากรอกข้อมูล", "referralOtherSales");
+    }
+  }
+
+  if (activePositionType === POSITION_TYPES.MARKETING) {
+    if (!form.availableStartDateMarketing) {
+      addError("availableStartDateMarketing", "กรุณากรอกข้อมูล", "availableStartDateMarketing");
+    }
+    if (!form.referralSourceMarketing) {
+      addError("referralSourceMarketing", "กรุณากรอกข้อมูล", "referralSourceMarketing-group");
+    }
+    if (form.referralSourceMarketing === "อื่นๆ" && !form.referralOtherMarketing.trim()) {
+      addError("referralOtherMarketing", "กรุณากรอกข้อมูล", "referralOtherMarketing");
     }
   }
 
@@ -155,6 +214,14 @@ function logPayloadDiagnostics(payload, errors) {
   });
   console.groupEnd();
 
+  console.group("Marketing");
+  console.table({
+    availableStartDateMarketing: payload.availableStartDateMarketing,
+    referralSourceMarketing: payload.referralSourceMarketing,
+    referralOtherMarketing: payload.referralOtherMarketing,
+  });
+  console.groupEnd();
+
   console.group("Pharmacist");
   console.table({
     pharmacistBranchPreference: payload.pharmacistBranchPreference,
@@ -184,12 +251,10 @@ export default function useJobApplicationForm() {
   const [lineNotifyError, setLineNotifyError] = useState("");
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
-
-  const flags = useMemo(() => {
-    const showSalesBranch = form.positionApplied === "พนักงานขายหน้าร้าน";
-    const showPharmBranch = form.positionApplied === "เภสัชกร";
-    return { showSalesBranch, showPharmBranch };
-  }, [form.positionApplied]);
+  const activePositionType = useMemo(
+    () => getEnabledPositionFromForm(form)?.type || "",
+    [form.positionApplied, form.pharmacistType]
+  );
 
   const requiredValidation = useMemo(() => validateRequiredFields(form), [form]);
 
@@ -207,6 +272,8 @@ export default function useJobApplicationForm() {
 
   function onPositionChange(value) {
     setStatus("");
+    const isSalesSelection = value === POSITION_IDS.SALES;
+    const isMarketingSelection = value === POSITION_IDS.MARKETING;
     setErrors(prev => {
       const next = { ...prev };
       delete next.positionApplied;
@@ -217,6 +284,9 @@ export default function useJobApplicationForm() {
       delete next.availableStartDatePharmacist;
       delete next.referralSourcePharmacist;
       delete next.referralOtherPharmacist;
+      delete next.availableStartDateMarketing;
+      delete next.referralSourceMarketing;
+      delete next.referralOtherMarketing;
       delete next.pharmacistBranchPreference;
       delete next.licenseNumber;
       delete next.pharmacySchool;
@@ -225,9 +295,10 @@ export default function useJobApplicationForm() {
     setForm(p => ({
       ...p,
       positionApplied: value,
-      pharmacistType: value === "เภสัชกร" ? p.pharmacistType : "",
+      pharmacistType: value === PHARM_POSITION_APPLIED ? p.pharmacistType : "",
       ...SALES_DEFAULTS,
-      ...(value === "พนักงานขายหน้าร้าน" ? {} : PHARM_DEFAULTS),
+      ...(isSalesSelection ? {} : PHARM_DEFAULTS),
+      ...(isMarketingSelection ? {} : MARKETING_DEFAULTS),
     }));
   }
 
@@ -356,36 +427,29 @@ export default function useJobApplicationForm() {
     setLineNotifyError("");
     setIsSubmitting(false);
   }
-    const referenceStep = form.positionApplied === "พนักงานขายหน้าร้าน"
-      ? "sales"
-      : form.positionApplied === "เภสัชกร"
-        ? (form.pharmacistType === "เภสัชกรฟูลไทม์"
-          ? "pharm-full"
-          : form.pharmacistType === "เภสัชกรพาร์ทไทม์"
-            ? "pharm-part"
-            : "")
-        : "";
-    const referenceData = getReferenceData(referenceStep);
-    
-    return {
-      isDark, setIsDark,
-      isSubmitting, setIsSubmitting,
-      form, setForm,
-      status,
-      submitResult,
-      lineNotify: {
-        enabled: ENABLE_LINE_NOTIFY,
-        status: lineNotifyStatus,
-        error: lineNotifyError,
-      },
-      errors,
-      flags,
-      referenceData,
+  const referenceStep = getReferenceStepFromForm(form);
+  const referenceData = getReferenceData(referenceStep);
+
+  return {
+    isDark, setIsDark,
+    isSubmitting, setIsSubmitting,
+    form, setForm,
+    status,
+    submitResult,
+    activePositionType,
+    lineNotify: {
+      enabled: ENABLE_LINE_NOTIFY,
+      status: lineNotifyStatus,
+      error: lineNotifyError,
+    },
+    errors,
+    referenceData,
     handlers: {
       onChange,
       onPositionChange,
       onPharmacistTypeChange,
       onSubmit,
-      resetForm },
-    };
+      resetForm,
+    },
+  };
 }

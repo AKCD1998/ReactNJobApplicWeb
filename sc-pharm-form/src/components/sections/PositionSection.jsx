@@ -1,3 +1,10 @@
+import {
+  POSITION_TYPES,
+  getEnabledPositions,
+  getSelectedPositionId,
+  resolveSelectionToFormValues,
+} from "../../config/positions";
+
 export default function PositionSection({
   form,
   onChange,
@@ -5,33 +12,22 @@ export default function PositionSection({
   onPositionChange,
   onPharmacistTypeChange,
 }) {
-  const selectedRole =
-    form.positionApplied === "พนักงานขายหน้าร้าน"
-      ? "พนักงานขายหน้าร้าน"
-      : form.positionApplied === "เภสัชกร" && form.pharmacistType
-        ? form.pharmacistType
-        : "";
+  const enabledPositions = getEnabledPositions();
+  const selectedRole = getSelectedPositionId(form);
 
   const handleRoleChange = (value) => {
-    if (value === "พนักงานขายหน้าร้าน") {
-      onPositionChange("พนักงานขายหน้าร้าน");
-      onPharmacistTypeChange("");
-      return;
-    }
-
-    if (value === "เภสัชกรฟูลไทม์") {
-      onPositionChange("เภสัชกร");
-      onPharmacistTypeChange("เภสัชกรฟูลไทม์");
-      return;
-    }
-
-    if (value === "เภสัชกรพาร์ทไทม์") {
-      onPositionChange("เภสัชกร");
-      onPharmacistTypeChange("เภสัชกรพาร์ทไทม์");
-    }
+    const next = resolveSelectionToFormValues(value);
+    if (!next) return;
+    onPositionChange(next.positionApplied);
+    onPharmacistTypeChange(next.pharmacistType);
   };
 
-  const roleError = errors?.positionApplied || errors?.pharmacistType;
+  const hasEnabledPharmacist = enabledPositions.some(
+    (position) => position.type === POSITION_TYPES.PHARMACIST
+  );
+  const roleError = hasEnabledPharmacist
+    ? errors?.positionApplied || errors?.pharmacistType
+    : errors?.positionApplied;
 
   return (
     <>
@@ -60,25 +56,13 @@ export default function PositionSection({
           className={`option-grid ${roleError ? "is-invalid" : ""}`}
           id="positionApplied-group"
         >
-          {[
-            { value: "พนักงานขายหน้าร้าน", label: "พนักงานขายหน้าร้าน" },
-            {
-              value: "เภสัชกรฟูลไทม์",
-              label: "เภสัชกรฟูลไทม์",
-              note: "(เฉพาะผู้สำเร็จการศึกษา ปริญญาตรี เภสัชศาสตรบัณฑิต (ภ.บ.) เท่านั้น)",
-            },
-            {
-              value: "เภสัชกรพาร์ทไทม์",
-              label: "เภสัชกรพาร์ทไทม์",
-              note: "(เฉพาะผู้สำเร็จการศึกษา ปริญญาตรี เภสัชศาสตรบัณฑิต (ภ.บ.) เท่านั้น)",
-            },
-          ].map((item) => (
-            <label key={item.value} className="option-item">
+          {enabledPositions.map((item) => (
+            <label key={item.id} className="option-item">
               <input
                 type="radio"
                 name="positionAppliedMerged"
-                value={item.value}
-                checked={selectedRole === item.value}
+                value={item.id}
+                checked={selectedRole === item.id}
                 onChange={(e) => handleRoleChange(e.target.value)}
               />
               <span>
