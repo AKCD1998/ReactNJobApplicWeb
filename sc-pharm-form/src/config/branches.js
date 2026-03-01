@@ -2,7 +2,7 @@ export const BRANCHES = [
   { id: "001", label: "สาขาตลาดแม่กลอง" },
   { id: "003", label: "สาขาวัดช่องลม" },
   { id: "004", label: "สาขาตลาดบางน้อย" },
-  { id: "005", label: "สาขาถนนเอกชัย-มหาชัย" },
+  { id: "005", label: "สาขาถนนเอกชัยมหาชัย" },
 ];
 
 const BRANCH_BY_ID = BRANCHES.reduce((acc, branch) => {
