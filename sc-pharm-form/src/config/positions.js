@@ -23,7 +23,7 @@ export const POSITIONS = [
   {
     id: POSITION_IDS.MARKETING,
     label: "พนักงานการตลาดออนไลน์ (Online Marketing Officer)",
-    enabled: true,
+    enabled: false,
     type: POSITION_TYPES.MARKETING,
   },
   {
@@ -115,7 +115,7 @@ export function getReferenceStepFromPosition(position) {
   if (!position) return "";
 
   if (position.type === POSITION_TYPES.SALES) return "sales";
-  // if (position.type === POSITION_TYPES.MARKETING) return "marketing";
+  if (position.type === POSITION_TYPES.MARKETING) return "marketing";
   if (position.id === POSITION_IDS.PHARM_FULL) return "pharm-full";
   if (position.id === POSITION_IDS.PHARM_PART) return "pharm-part";
 
