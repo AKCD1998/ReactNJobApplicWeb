@@ -2,7 +2,7 @@ export const BRANCHES = [
   { id: "001", label: "สาขาตลาดแม่กลอง" },
   { id: "003", label: "สาขาวัดช่องลม" },
   { id: "004", label: "สาขาตลาดบางน้อย" },
-  { id: "005", label: "สาขาถนนเอกชัยมหาชัย" },
+  { id: "005", label: "สาขาถนนเอกชัยสมุทรสาคร" },
 ];
 
 const BRANCH_BY_ID = BRANCHES.reduce((acc, branch) => {
@@ -11,7 +11,7 @@ const BRANCH_BY_ID = BRANCHES.reduce((acc, branch) => {
 }, {});
 
 // Edit these arrays to change which branches are recruiting this round.
-export const pharmacistEnabled = ["005"];
+export const pharmacistEnabled = ["004","005"];
 export const salesEnabled = ["005"];
 
 export function getEnabledBranchIds(role) {
