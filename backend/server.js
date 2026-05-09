@@ -14,6 +14,7 @@ const SUBMIT_URL = process.env.SUBMIT_URL;
 const QUICK_CV_SUBMIT_URL = process.env.QUICK_CV_SUBMIT_URL || SUBMIT_URL;
 const HR_EMAIL = process.env.HR_EMAIL || process.env.HR_TO_EMAIL;
 const LINE_ADMIN_URL = process.env.LINE_NOTIFY_ADMIN_URL || "";
+const SENDGRID_API_KEY = process.env.REACTNJOB_SENDGRID_API_KEY;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -59,8 +60,8 @@ app.use(
   })
 );
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (SENDGRID_API_KEY) {
+  sgMail.setApiKey(SENDGRID_API_KEY);
 }
 
 const fetchRequest = (...args) => {
@@ -394,7 +395,7 @@ async function forwardQuickCvToAppsScript(payload) {
 async function sendResumeEmail(payload, resumeFile) {
   if (!resumeFile) return { ok: true, skipped: true };
 
-  if (!process.env.SENDGRID_API_KEY || !HR_EMAIL || !process.env.FROM_EMAIL) {
+  if (!SENDGRID_API_KEY || !HR_EMAIL || !process.env.FROM_EMAIL) {
     return { ok: false, skipped: false, error: "Missing SendGrid configuration" };
   }
 
@@ -600,7 +601,7 @@ app.post("/api/apply/cv", (req, res) => {
     );
     console.log("[cv] validated:", safeFilename);
 
-    if (!process.env.SENDGRID_API_KEY || !HR_EMAIL || !process.env.FROM_EMAIL) {
+    if (!SENDGRID_API_KEY || !HR_EMAIL || !process.env.FROM_EMAIL) {
       return res.status(500).json({ ok: false, error: "Missing SendGrid configuration" });
     }
 
@@ -704,8 +705,8 @@ app.post("/api/resume", async (req, res) => {
       resumeFileDataBase64,
     } = req.body || {};
 
-    if (!process.env.SENDGRID_API_KEY) {
-      return res.status(500).json({ ok: false, error: "Missing SENDGRID_API_KEY" });
+    if (!SENDGRID_API_KEY) {
+      return res.status(500).json({ ok: false, error: "Missing REACTNJOB_SENDGRID_API_KEY" });
     }
 
     if (!HR_EMAIL || !process.env.FROM_EMAIL) {

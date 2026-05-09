@@ -7,6 +7,7 @@ const SUBMIT_URL =
 /**
  * IMPORTANT:
  * - Production ต้องตั้งค่า VITE_API_BASE_URL เป็นโดเมน backend จริง (ห้ามใส่ /api ต่อท้าย)
+ * - ถ้า backend ถูก mount ใต้ shared service ให้ตั้ง VITE_REACTNJOB_API_PREFIX เช่น /api/reactnjob
  * - Local dev ถ้าไม่ตั้ง จะ fallback ไป http://localhost:3003
  */
 const normalizeApiBase = (base) => {
@@ -15,25 +16,36 @@ const normalizeApiBase = (base) => {
   return trimmed.replace(/\/api$/i, "");
 };
 
+const normalizeApiPrefix = (prefix) => {
+  const trimmed = String(prefix || "/api").trim().replace(/^\/+|\/+$/g, "");
+  return trimmed ? `/${trimmed}` : "/api";
+};
+
 const API_BASE =
   normalizeApiBase(import.meta.env.VITE_API_BASE_URL) || "http://localhost:3003";
+const API_PREFIX = normalizeApiPrefix(
+  import.meta.env.VITE_REACTNJOB_API_PREFIX || import.meta.env.VITE_API_PREFIX || "/api"
+);
 
-const resolveApiUrl = (input, baseUrl) => {
+const resolveApiUrl = (input, baseUrl, apiPrefix = API_PREFIX) => {
   const value = String(input || "").trim();
   if (!value) return "";
   if (/^https?:\/\//i.test(value)) return value;
-  const needsSlash = value.startsWith("/") ? "" : "/";
-  return `${baseUrl}${needsSlash}${value}`;
+  const path = value.startsWith("/") ? value : `/${value}`;
+  if (path === apiPrefix || path.startsWith(`${apiPrefix}/`) || path.startsWith("/api/")) {
+    return `${baseUrl}${path}`;
+  }
+  return `${baseUrl}${apiPrefix}${path}`;
 };
 
-const APPLICATION_SUBMIT_URL = `${API_BASE}/api/submit-application`;
-const CV_SUBMIT_URL = `${API_BASE}/api/apply/cv`;
+const APPLICATION_SUBMIT_URL = `${API_BASE}${API_PREFIX}/submit-application`;
+const CV_SUBMIT_URL = `${API_BASE}${API_PREFIX}/apply/cv`;
 const LINE_NOTIFY_URL = resolveApiUrl(
-  import.meta.env.VITE_LINE_NOTIFY_ENDPOINT || "/api/notify/line/job-application",
+  import.meta.env.VITE_LINE_NOTIFY_ENDPOINT || "/notify/line/job-application",
   API_BASE
 );
 const LINE_CV_NOTIFY_URL = resolveApiUrl(
-  import.meta.env.VITE_LINE_CV_NOTIFY_ENDPOINT || "/api/line/notify",
+  import.meta.env.VITE_LINE_CV_NOTIFY_ENDPOINT || "/line/notify",
   API_BASE
 );
 
@@ -206,6 +218,7 @@ export function getReferenceData(step) {
 
 export {
   SUBMIT_URL,
+  API_PREFIX,
   APPLICATION_SUBMIT_URL,
   CV_SUBMIT_URL,
   LINE_NOTIFY_URL,

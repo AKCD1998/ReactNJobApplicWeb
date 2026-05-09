@@ -19,7 +19,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ### Required backend env vars
 
-- `SENDGRID_API_KEY`
+- `REACTNJOB_SENDGRID_API_KEY`
 - `HR_EMAIL` (or `HR_TO_EMAIL`)
 - `FROM_EMAIL`
 - `PORT` (optional, default `3003`)
