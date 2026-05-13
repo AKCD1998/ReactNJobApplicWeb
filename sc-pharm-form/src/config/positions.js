@@ -29,7 +29,7 @@ export const POSITIONS = [
   {
     id: POSITION_IDS.PHARM_FULL,
     label: "เภสัชกรฟูลไทม์",
-    enabled: true,
+    enabled: false,
     type: POSITION_TYPES.PHARMACIST,
     note: "(เฉพาะผู้สำเร็จการศึกษา ปริญญาตรี เภสัชศาสตรบัณฑิต (ภ.บ.) เท่านั้น)",
   },
