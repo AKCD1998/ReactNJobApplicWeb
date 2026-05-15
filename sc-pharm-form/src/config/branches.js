@@ -11,7 +11,7 @@ const BRANCH_BY_ID = BRANCHES.reduce((acc, branch) => {
 }, {});
 
 // Edit these arrays to change which branches are recruiting this round.
-export const pharmacistEnabled = ["004","005"];
+export const pharmacistEnabled = ["001", "003", "004", "005"];
 export const salesEnabled = ["005"];
 
 export function getEnabledBranchIds(role) {
