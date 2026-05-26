@@ -26,9 +26,16 @@ export default function ReferenceCard({ referenceData }) {
           <div key={section.heading} className="ref-section">
             <h4 className="ref-heading">{section.heading}</h4>
             <ul className="ref-list">
-              {section.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
+              {section.items.map((item) => {
+                const text = typeof item === "string" ? item : item.text;
+                const className = typeof item === "string" ? "" : item.className || "";
+
+                return (
+                  <li key={text} className={className}>
+                    {text}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

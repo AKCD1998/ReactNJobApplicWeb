@@ -3,6 +3,7 @@ export const SALES_DEFAULTS = {
   availableStartDateSales: "",
   referralSourceSales: "",
   referralOtherSales: "",
+  salesQualificationConsent: "",
 };
 
 export const PHARM_DEFAULTS = {

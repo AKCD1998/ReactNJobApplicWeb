@@ -93,6 +93,37 @@ export default function SalesSection({ form, onChange, errors }) {
           <div className="error-text">{errors.referralOtherSales.message}</div>
         ) : null}
       </div>
+
+      <div className="question-block" data-field-key="salesQualificationConsent">
+        <div className="question-label">
+          ผู้สมัครรับทราบและยินยอมว่าคุณสมบัติของพนักงานขายหน้าร้าน มีดังนี้
+          <span className="required-star">*</span>
+        </div>
+        <ul className="sales-qualification-list">
+          <li className="sales-qualification-emphasis">***เพศหญิง เท่านั้น***</li>
+          <li>อายุ 18 ปีขึ้นไป</li>
+          <li>วุฒิ ม.3</li>
+          <li>สามารถทำงานเป็นกะได้</li>
+        </ul>
+        <div
+          className={`option-grid ${errors?.salesQualificationConsent ? "is-invalid" : ""}`}
+          id="salesQualificationConsent-group"
+        >
+          <label className="option-item">
+            <input
+              type="radio"
+              name="salesQualificationConsent"
+              value="รับทราบและยินยอม"
+              checked={form.salesQualificationConsent === "รับทราบและยินยอม"}
+              onChange={onChange}
+            />
+            <span>รับทราบและยินยอม</span>
+          </label>
+        </div>
+        {errors?.salesQualificationConsent ? (
+          <div className="error-text">{errors.salesQualificationConsent.message}</div>
+        ) : null}
+      </div>
     </>
   );
 }

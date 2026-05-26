@@ -50,6 +50,7 @@ function buildPayload(form, clientTimeOverride) {
     referralSourceSales: isSales ? form.referralSourceSales : "",
     referralOtherSales:
       isSales && form.referralSourceSales === "อื่นๆ" ? form.referralOtherSales.trim() : "",
+    salesQualificationConsent: isSales ? form.salesQualificationConsent : "",
     availableStartDateMarketing: isMarketing ? form.availableStartDateMarketing : "",
     referralSourceMarketing: isMarketing ? form.referralSourceMarketing : "",
     referralOtherMarketing:
@@ -154,6 +155,9 @@ function validateRequiredFields(form) {
     if (form.referralSourceSales === "อื่นๆ" && !form.referralOtherSales.trim()) {
       addError("referralOtherSales", "กรุณากรอกข้อมูล", "referralOtherSales");
     }
+    if (!form.salesQualificationConsent) {
+      addError("salesQualificationConsent", "กรุณากรอกข้อมูล", "salesQualificationConsent-group");
+    }
   }
 
   if (activePositionType === POSITION_TYPES.MARKETING) {
@@ -211,6 +215,7 @@ function logPayloadDiagnostics(payload, errors) {
     availableStartDateSales: payload.availableStartDateSales,
     referralSourceSales: payload.referralSourceSales,
     referralOtherSales: payload.referralOtherSales,
+    salesQualificationConsent: payload.salesQualificationConsent,
   });
   console.groupEnd();
 
@@ -281,6 +286,7 @@ export default function useJobApplicationForm() {
       delete next.availableStartDateSales;
       delete next.referralSourceSales;
       delete next.referralOtherSales;
+      delete next.salesQualificationConsent;
       delete next.availableStartDatePharmacist;
       delete next.referralSourcePharmacist;
       delete next.referralOtherPharmacist;

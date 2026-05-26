@@ -34,6 +34,7 @@ export default function validateForm(form) {
     if (form.referralSourceSales === "อื่นๆ" && !form.referralOtherSales.trim()) {
       return "กรุณาระบุช่องทางอื่นๆ";
     }
+    if (!form.salesQualificationConsent) return "กรุณารับทราบคุณสมบัติพนักงานขายหน้าร้าน";
   }
 
   if (activePositionType === POSITION_TYPES.MARKETING) {

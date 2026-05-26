@@ -328,6 +328,24 @@ a:hover {
   margin: 2px 0;
 }
 
+.ref-list li.ref-item-emphasis,
+.sales-qualification-emphasis {
+  color: #d93025;
+  font-weight: 700;
+}
+
+.sales-qualification-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  list-style-position: outside;
+}
+
+.sales-qualification-list li {
+  margin: 2px 0;
+}
+
 .ref-note {
   margin: 6px 0 0;
   font-size: 14px;
